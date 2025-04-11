@@ -45,6 +45,7 @@ const useFormField = () => {
   const itemContext = React.useContext(FormItemContext)
   const formContext = useFormContext()
 
+  // Add null check for formContext before trying to destructure
   const fieldState = formContext ? formContext.getFieldState(fieldContext.name, formContext.formState) : null
 
   if (!fieldContext) {
