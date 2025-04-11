@@ -93,8 +93,6 @@ export const calculateMortgageAmortizationForMonth = (
   );
   
   let balance = loanAmount;
-  let totalPrincipal = 0;
-  let totalInterest = 0;
   
   // Calculate to the current month
   for (let i = 1; i <= monthNumber; i++) {
@@ -196,11 +194,15 @@ export const calculateComparison = (formData: FormData): ComparisonResults => {
   
   let monthlyRent = renting.monthlyRent;
   let totalInvestment = 0;
-  let currentInvestmentValue = 0;
+  let currentInvestmentValue = general.currentSavings; // Start with current savings
+  let totalRentingInvestmentValue = general.currentSavings;
   let totalCapitalGainsTaxPaid = 0;
   
   let cumulativeBuyingCosts = 0;
   let cumulativeRentingCosts = 0;
+
+  // In buying scenario, downpayment is immediately spent
+  let buyingAvailableFunds = general.currentSavings - downPaymentAmount;
 
   // Calculate for each year
   for (let year = 1; year <= timeHorizonYears; year++) {
@@ -211,6 +213,28 @@ export const calculateComparison = (formData: FormData): ComparisonResults => {
     let yearlyPropertyTaxes = 0;
     let yearlyHomeInsurance = 0;
     let yearlyMaintenanceCosts = 0;
+    
+    // Renting scenario calculations for this year
+    let yearlyRent = 0;
+    let yearlyInvestment = 0;
+    
+    // Calculate monthly property taxes, insurance, and maintenance
+    const monthlyPropertyTaxes = calculateMonthlyPropertyTaxes(currentHomeValue, buying.propertyTaxRate);
+    const monthlyHomeInsurance = calculateMonthlyHomeInsurance(currentHomeValue, buying.homeInsuranceRate);
+    const monthlyMaintenanceCosts = calculateMonthlyMaintenanceCosts(
+      currentHomeValue, 
+      buying.maintenanceCosts,
+      buying.usePercentageForMaintenance
+    );
+    
+    // Calculate the monthly difference between buying and renting costs
+    const monthlyBuyingCost = 
+      monthlyMortgagePayment + 
+      monthlyPropertyTaxes + 
+      monthlyHomeInsurance + 
+      monthlyMaintenanceCosts;
+    
+    const monthlySavings = monthlyBuyingCost - monthlyRent;
     
     // Calculate for each month in this year
     for (let month = 1; month <= 12; month++) {
@@ -227,26 +251,41 @@ export const calculateComparison = (formData: FormData): ComparisonResults => {
         loanBalance = remainingBalance;
       }
       
-      // Property taxes, insurance, and maintenance for the month
-      const monthlyPropertyTaxes = calculateMonthlyPropertyTaxes(currentHomeValue, buying.propertyTaxRate);
-      const monthlyHomeInsurance = calculateMonthlyHomeInsurance(currentHomeValue, buying.homeInsuranceRate);
-      const monthlyMaintenanceCosts = calculateMonthlyMaintenanceCosts(
-        currentHomeValue, 
-        buying.maintenanceCosts,
-        buying.usePercentageForMaintenance
-      );
-      
+      // Update yearly property costs
       yearlyPropertyTaxes += monthlyPropertyTaxes;
       yearlyHomeInsurance += monthlyHomeInsurance;
       yearlyMaintenanceCosts += monthlyMaintenanceCosts;
       
-      cumulativeBuyingCosts += monthlyMortgagePayment + monthlyPropertyTaxes + 
-        monthlyHomeInsurance + monthlyMaintenanceCosts;
+      // Update cumulative buying costs
+      cumulativeBuyingCosts += monthlyMortgagePayment + 
+        monthlyPropertyTaxes + monthlyHomeInsurance + monthlyMaintenanceCosts;
+      
+      // Track rent paid
+      yearlyRent += monthlyRent;
+      cumulativeRentingCosts += monthlyRent;
+      
+      // For renting scenario, invest the savings
+      if (monthlySavings > 0) {
+        yearlyInvestment += monthlySavings;
+        totalInvestment += monthlySavings;
+      }
+      
+      // Update investment value for renting scenario
+      totalRentingInvestmentValue = calculateInvestmentReturnForMonth(
+        totalRentingInvestmentValue,
+        monthlySavings,
+        investment.annualReturn,
+        1
+      );
+      
+      // Update investment value for buying scenario (with any remaining funds)
+      buyingAvailableFunds = calculateInvestmentReturnForMonth(
+        buyingAvailableFunds,
+        0, // No monthly contribution for buying scenario
+        investment.annualReturn,
+        1
+      );
     }
-    
-    // Update total principal and interest
-    totalPrincipalPaid += yearlyPrincipalPaid;
-    totalInterestPaid += yearlyInterestPaid;
     
     // Update home value based on appreciation
     currentHomeValue *= (1 + appreciationRate);
@@ -254,8 +293,21 @@ export const calculateComparison = (formData: FormData): ComparisonResults => {
     // Calculate home equity
     const homeEquity = currentHomeValue - loanBalance;
     
-    // Calculate total wealth for buying
-    const buyingWealth = general.currentSavings - downPaymentAmount + homeEquity;
+    // Calculate total wealth for buying (home equity + available funds)
+    const buyingWealth = homeEquity + buyingAvailableFunds;
+    
+    // Calculate capital gains tax for renting scenario
+    const yearlyCapitalGainsTax = calculateCapitalGainsTax(
+      general.currentSavings + totalInvestment,
+      totalRentingInvestmentValue,
+      investment.capitalGainsTaxRate
+    );
+    
+    totalCapitalGainsTaxPaid += yearlyCapitalGainsTax;
+    
+    // Calculate total wealth for renting
+    const investmentValueAfterTax = totalRentingInvestmentValue - yearlyCapitalGainsTax;
+    const rentingWealth = investmentValueAfterTax;
     
     // Add yearly buying result
     buyingResults.push({
@@ -272,61 +324,13 @@ export const calculateComparison = (formData: FormData): ComparisonResults => {
       totalWealth: buyingWealth
     });
     
-    // Renting scenario calculations for this year
-    let yearlyRent = 0;
-    let yearlyInvestment = 0;
-    
-    // Calculate initial monthly cost difference
-    const initialMonthlyBuyingCost = 
-      monthlyMortgagePayment + 
-      initialMonthlyPropertyTaxes + 
-      initialMonthlyHomeInsurance + 
-      initialMonthlyMaintenanceCosts;
-    
-    let monthlySavings = initialMonthlyBuyingCost - monthlyRent;
-    
-    // Calculate for each month in this year
-    for (let month = 1; month <= 12; month++) {
-      yearlyRent += monthlyRent;
-      cumulativeRentingCosts += monthlyRent;
-      
-      // Invest the savings
-      if (monthlySavings > 0) {
-        yearlyInvestment += monthlySavings;
-        totalInvestment += monthlySavings;
-      }
-      
-      // Update currentInvestmentValue with the new investment
-      currentInvestmentValue = calculateInvestmentReturnForMonth(
-        currentInvestmentValue,
-        monthlySavings > 0 ? monthlySavings : 0,
-        investment.annualReturn,
-        1
-      );
-    }
-    
-    // Calculate capital gains tax for this year
-    const yearlyCapitalGainsTax = calculateCapitalGainsTax(
-      totalInvestment,
-      currentInvestmentValue,
-      investment.capitalGainsTaxRate
-    );
-    
-    // Note: In a real-world scenario, capital gains taxes are typically paid only when
-    // investments are sold. For simplicity, we're calculating them each year.
-    totalCapitalGainsTaxPaid += yearlyCapitalGainsTax;
-    
-    // Calculate total wealth for renting
-    const investmentValueAfterTax = currentInvestmentValue - yearlyCapitalGainsTax;
-    const rentingWealth = general.currentSavings + investmentValueAfterTax;
-    
     // Add yearly renting result
     rentingResults.push({
       year,
       totalRent: yearlyRent,
       monthlySavings,
       amountInvested: yearlyInvestment,
-      investmentValueBeforeTax: currentInvestmentValue,
+      investmentValueBeforeTax: totalRentingInvestmentValue,
       capitalGainsTaxPaid: yearlyCapitalGainsTax,
       investmentValueAfterTax,
       totalWealth: rentingWealth
