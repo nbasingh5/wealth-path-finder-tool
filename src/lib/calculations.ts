@@ -67,10 +67,8 @@ export const calculateMonthlyMaintenanceCosts = (
   usePercentage: boolean
 ): number => {
   if (usePercentage) {
-    // When using percentage, the input is a percentage of home value (annually)
     return (homeValue * maintenanceCosts) / (12 * 100);
   } else {
-    // When not using percentage, the input is the total annual cost in dollars
     return maintenanceCosts / 12;
   }
 };
@@ -220,6 +218,24 @@ export const calculateComparison = (formData: FormData): ComparisonResults => {
     let yearlyRent = 0;
     let yearlyInvestment = 0;
     
+    // Calculate monthly property taxes, insurance, and maintenance
+    const monthlyPropertyTaxes = calculateMonthlyPropertyTaxes(currentHomeValue, buying.propertyTaxRate);
+    const monthlyHomeInsurance = calculateMonthlyHomeInsurance(currentHomeValue, buying.homeInsuranceRate);
+    const monthlyMaintenanceCosts = calculateMonthlyMaintenanceCosts(
+      currentHomeValue, 
+      buying.maintenanceCosts,
+      buying.usePercentageForMaintenance
+    );
+    
+    // Calculate the monthly difference between buying and renting costs
+    const monthlyBuyingCost = 
+      monthlyMortgagePayment + 
+      monthlyPropertyTaxes + 
+      monthlyHomeInsurance + 
+      monthlyMaintenanceCosts;
+    
+    const monthlySavings = monthlyBuyingCost - monthlyRent;
+    
     // Calculate for each month in this year
     for (let month = 1; month <= 12; month++) {
       const globalMonthNumber = (year - 1) * 12 + month;
@@ -235,16 +251,6 @@ export const calculateComparison = (formData: FormData): ComparisonResults => {
         loanBalance = remainingBalance;
       }
       
-      // Calculate monthly property taxes, insurance, and maintenance
-      // These costs should be calculated using the current home value which changes each year
-      const monthlyPropertyTaxes = calculateMonthlyPropertyTaxes(currentHomeValue, buying.propertyTaxRate);
-      const monthlyHomeInsurance = calculateMonthlyHomeInsurance(currentHomeValue, buying.homeInsuranceRate);
-      const monthlyMaintenanceCosts = calculateMonthlyMaintenanceCosts(
-        currentHomeValue, 
-        buying.maintenanceCosts,
-        buying.usePercentageForMaintenance
-      );
-      
       // Update yearly property costs
       yearlyPropertyTaxes += monthlyPropertyTaxes;
       yearlyHomeInsurance += monthlyHomeInsurance;
@@ -253,15 +259,6 @@ export const calculateComparison = (formData: FormData): ComparisonResults => {
       // Update cumulative buying costs
       cumulativeBuyingCosts += monthlyMortgagePayment + 
         monthlyPropertyTaxes + monthlyHomeInsurance + monthlyMaintenanceCosts;
-      
-      // Calculate the monthly difference between buying and renting costs
-      const monthlyBuyingCost = 
-        monthlyMortgagePayment + 
-        monthlyPropertyTaxes + 
-        monthlyHomeInsurance + 
-        monthlyMaintenanceCosts;
-      
-      const monthlySavings = monthlyBuyingCost - monthlyRent;
       
       // Track rent paid
       yearlyRent += monthlyRent;
