@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -16,7 +15,7 @@ import Footer from "@/components/layout/Footer";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import InfoCard from "@/components/layout/InfoCard";
 import CostsChart from "@/components/results/CostsChart";
-import { ChevronDown, ChevronUp, Calculate, RefreshCw } from "lucide-react";
+import { ChevronDown, ChevronUp, Calculator, RefreshCw } from "lucide-react";
 
 // Default form values
 const defaultGeneral: GeneralInputs = {
@@ -150,7 +149,7 @@ const Index = () => {
                   className="flex-1"
                   size="lg"
                 >
-                  <Calculate className="w-4 h-4 mr-2" />
+                  <Calculator className="w-4 h-4 mr-2" />
                   Calculate Results
                 </Button>
                 
