@@ -2,7 +2,7 @@
 import React from "react";
 import { Slider } from "../ui/slider";
 import { Label } from "../ui/label";
-import { FormDescription } from "../ui/form";
+import { StandaloneFormDescription } from "./StandaloneFormDescription";
 
 interface SliderInputProps {
   id: string;
@@ -47,7 +47,7 @@ const SliderInput = ({
         className="cursor-pointer"
       />
       {description && (
-        <FormDescription>{description}</FormDescription>
+        <StandaloneFormDescription>{description}</StandaloneFormDescription>
       )}
     </div>
   );

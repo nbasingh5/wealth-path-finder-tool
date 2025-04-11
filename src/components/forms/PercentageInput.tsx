@@ -2,7 +2,7 @@
 import React, { ChangeEvent } from "react";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
-import { FormDescription } from "../ui/form";
+import { StandaloneFormDescription } from "./StandaloneFormDescription";
 
 interface PercentageInputProps {
   id: string;
@@ -64,7 +64,7 @@ const PercentageInput = ({
         </span>
       </div>
       {description && (
-        <FormDescription>{description}</FormDescription>
+        <StandaloneFormDescription>{description}</StandaloneFormDescription>
       )}
     </div>
   );
