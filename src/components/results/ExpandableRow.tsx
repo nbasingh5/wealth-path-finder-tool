@@ -28,9 +28,11 @@ const ExpandableRow = ({ rowData, isExpanded, onToggle, columns }: ExpandableRow
                 {rowData[col.key]}
               </div>
             ) : (
-              rowData[col.key] instanceof Number || typeof rowData[col.key] === 'number' 
-                ? formatCurrency(rowData[col.key]) 
-                : rowData[col.key]
+              col.key === 'betterOption' 
+                ? rowData[col.key]
+                : typeof rowData[col.key] === 'number'
+                  ? formatCurrency(rowData[col.key]) 
+                  : rowData[col.key]
             )}
           </TableCell>
         ))}

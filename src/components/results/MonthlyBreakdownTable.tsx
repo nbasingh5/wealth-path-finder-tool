@@ -32,9 +32,15 @@ const MonthlyBreakdownTable = ({ year, columns, rowData }: MonthlyBreakdownTable
                     {columns.slice(1).map(col => (
                       <TableCell key={col.key}>
                         {typeof rowData[col.key] === 'number'
-                          ? col.key === 'yearlyIncome' || col.key === 'leftoverIncome'
+                          ? (col.key === 'yearlyIncome' || 
+                             col.key === 'leftoverIncome' ||
+                             col.key === 'mortgagePayment' ||
+                             col.key === 'propertyTaxes' ||
+                             col.key === 'homeInsurance' ||
+                             col.key === 'maintenanceCosts' ||
+                             col.key === 'totalRent')
                             ? formatCurrency(rowData[col.key] / 12)
-                            : formatCurrency(rowData[col.key] / 12)
+                            : formatCurrency(rowData[col.key])
                           : '-'}
                       </TableCell>
                     ))}
