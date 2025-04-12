@@ -22,4 +22,5 @@ export {
   
   // calculationEngine
   calculateComparison
-} from './utils';
+} from './utils/index';
+
