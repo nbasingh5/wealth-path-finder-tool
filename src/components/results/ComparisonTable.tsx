@@ -82,6 +82,7 @@ const ComparisonTable = ({ results }: ComparisonTableProps) => {
     { key: "investmentValueBeforeTax", label: "Investment Value (Before Tax)" },
     { key: "capitalGainsTaxPaid", label: "Capital Gains Tax" },
     { key: "investmentValueAfterTax", label: "Investment Value (After Tax)" },
+    { key: "securityDeposit", label: "Security Deposit" },
     { key: "totalWealth", label: "Total Wealth" }
   ];
 
@@ -117,91 +118,52 @@ const ComparisonTable = ({ results }: ComparisonTableProps) => {
 
   // Process buying data to add investment earnings
   const enhancedBuyingResults = buyingResults.map((year, index) => {
-    // For amount invested, we'll use the cumulative contributions
+    // Calculate amount invested
     let amountInvested = 0;
     
     if (index === 0) {
+      // For Year 0, use initial investment
       amountInvested = year.initialInvestment || 0;
-      // No investment earnings in year 0
-      return {
-        ...year,
-        amountInvested,
-        investmentEarnings: 0
-      };
     } else {
-      // Calculate cumulative investment (previous investments + this year's contribution)
+      // For Year 1+, use previous year's total wealth + current year's leftover income
       const prevYear = buyingResults[index - 1];
-      
-      // This year's contribution is the leftover income
-      const yearContribution = year.leftoverIncome || 0;
-      
-      // Previous year's investment value
-      const prevInvestmentValue = prevYear.leftoverInvestmentValue || 0;
-      
-      // Current year's investment value
-      const currentInvestmentValue = year.leftoverInvestmentValue || 0;
-      
-      // Investment earnings = Current value - Previous value - New contributions
-      const investmentEarnings = Math.max(0, currentInvestmentValue - prevInvestmentValue - yearContribution);
-      
-      // Amount invested is the running total of all contributions
-      if (index === 1) {
-        // For year 1, start with initial investment + year 1's contribution
-        amountInvested = (prevYear.initialInvestment || 0) + yearContribution;
-      } else {
-        // For later years, add to previous year's amount invested
-        amountInvested = (prevYear.amountInvested || 0) + yearContribution;
-      }
-      
-      return {
-        ...year,
-        amountInvested,
-        investmentEarnings
-      };
+      amountInvested = prevYear.totalWealth + year.leftoverIncome;
     }
-  });
-    }
+    
+    // Calculate investment earnings (difference between total investment value and amount invested)
+    const investmentEarnings = year.leftoverInvestmentValue - 
+      (index === 0 ? amountInvested : (year.leftoverIncome || 0));
+    
+    return {
+      ...year,
+      amountInvested,
+      investmentEarnings: Math.max(0, investmentEarnings) // Ensure we don't show negative earnings
+    };
   });
   
   // Process renting data to add investment earnings
   const enhancedRentingResults = rentingResults.map((year, index) => {
+    // Calculate amount invested
+    let amountInvested = 0;
+    
     if (index === 0) {
-      // For Year 0, initialize values
-      return {
-        ...year,
-        amountInvested: year.initialInvestment || 0,
-        investmentEarnings: 0
-      };
+      // For Year 0, use initial investment
+      amountInvested = year.initialInvestment || 0;
     } else {
+      // For Year 1+, use previous year's total wealth + current year's leftover income
       const prevYear = rentingResults[index - 1];
-      
-      // This year's contribution is the leftover income
-      const yearContribution = year.leftoverIncome || 0;
-      
-      // Previous year's investment value (after tax)
-      const prevInvestmentValue = prevYear.investmentValueAfterTax || 0;
-      
-      // Current year's investment value (before tax)
-      const currentInvestmentValue = year.investmentValueBeforeTax || 0;
-      
-      // Investment earnings = Current value before tax - Previous value after tax - New contributions
-      const investmentEarnings = Math.max(0, currentInvestmentValue - prevInvestmentValue - yearContribution);
-      
-      // Amount invested is the running total of all contributions
-      let amountInvested = 0;
-      if (index === 1) {
-        // For year 1, start with initial investment + year 1's contribution
-        amountInvested = (prevYear.initialInvestment || 0) + yearContribution;
-      } else {
-        // For later years, add to previous year's amount invested
-        amountInvested = (prevYear.amountInvested || 0) + yearContribution;
-      }
-      
-      return {
-        ...year,
-        amountInvested,
-        investmentEarnings
-      };
+      amountInvested = prevYear.totalWealth + year.leftoverIncome;
+    }
+    
+    // Calculate investment earnings
+    const investmentEarnings = year.investmentValueAfterTax - 
+      (index === 0 ? amountInvested : (year.leftoverIncome || 0)) - (year.securityDeposit || 0);
+    
+    return {
+      ...year,
+      amountInvested,
+      investmentEarnings: Math.max(0, investmentEarnings) // Ensure we don't show negative earnings
+    };
   });
 
   return (
