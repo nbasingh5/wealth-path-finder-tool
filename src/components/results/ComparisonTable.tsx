@@ -82,7 +82,6 @@ const ComparisonTable = ({ results }: ComparisonTableProps) => {
     { key: "investmentValueBeforeTax", label: "Investment Value (Before Tax)" },
     { key: "capitalGainsTaxPaid", label: "Capital Gains Tax" },
     { key: "investmentValueAfterTax", label: "Investment Value (After Tax)" },
-    { key: "securityDeposit", label: "Security Deposit" },
     { key: "totalWealth", label: "Total Wealth" }
   ];
 
@@ -157,7 +156,7 @@ const ComparisonTable = ({ results }: ComparisonTableProps) => {
     
     // Calculate investment earnings
     const investmentEarnings = year.investmentValueAfterTax - 
-      (index === 0 ? amountInvested : (year.leftoverIncome || 0)) - (year.securityDeposit || 0);
+      (index === 0 ? amountInvested : (year.leftoverIncome || 0));
     
     return {
       ...year,

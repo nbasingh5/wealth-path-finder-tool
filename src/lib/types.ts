@@ -66,7 +66,6 @@ export interface MonthlyRentingDataPoint {
   rentersInsurance: number;
   leftoverIncome: number;
   investmentValue: number;
-  securityDeposit: number;
   initialInvestment: number; // Added field
   additionalContributions: number; // Added field
   monthlySavings: number; // Added field
@@ -108,7 +107,6 @@ export interface YearlyRentingResult {
   yearlyIncome: number;
   leftoverIncome: number;
   leftoverInvestmentValue: number;
-  securityDeposit?: number; // Optional for backward compatibility
   initialInvestment?: number; // Added to show initial investment
   additionalContributions?: number; // Added to show new contributions
   monthlyData?: MonthlyRentingDataPoint[]; // Optional for backward compatibility

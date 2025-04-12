@@ -82,7 +82,7 @@ const ExpandableRow = ({ rowData, isExpanded, onToggle, columns }: ExpandableRow
         return "Capital gains tax on investment earnings.";
       
       case 'totalWealth':
-        return "Total wealth including home equity, investments, and security deposit.";
+        return "Total wealth including home equity, and investments.";
       
       case 'difference':
         return "Difference between buying and renting wealth (positive means buying is better).";

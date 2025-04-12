@@ -197,12 +197,7 @@ export const calculateComparison = (formData: FormData): ComparisonResults => {
   // Track cumulative taxes paid
   let buyingCumulativeTaxesPaid = 0;
   let rentingCumulativeTaxesPaid = 0;
-  
-  // Add security deposit (typically 1-2 months' rent)
-  const securityDeposit = monthlyRent * 1; // 1 month's rent as deposit
-  
-  // Adjust initial rental investment to account for security deposit
-  rentingInvestmentValue -= securityDeposit;
+
   rentingInitialInvestment = rentingInvestmentValue;
   
   // Add renter's insurance
@@ -241,7 +236,6 @@ export const calculateComparison = (formData: FormData): ComparisonResults => {
       rentersInsurance: 0,
       leftoverIncome: 0,
       investmentValue: rentingInvestmentValue,
-      securityDeposit,
       // Add these fields to monthly data
       initialInvestment: rentingInitialInvestment,
       additionalContributions: 0,
@@ -275,14 +269,13 @@ export const calculateComparison = (formData: FormData): ComparisonResults => {
     totalRent: 0,
     monthlySavings: 0,
     amountInvested: rentingInitialInvestment, // FIXED: Show initial investment in year 0
-    investmentValueBeforeTax: rentingInvestmentValue + securityDeposit,
+    investmentValueBeforeTax: rentingInvestmentValue,
     capitalGainsTaxPaid: 0,
-    investmentValueAfterTax: rentingInvestmentValue + securityDeposit,
-    totalWealth: rentingInvestmentValue + securityDeposit,
+    investmentValueAfterTax: rentingInvestmentValue,
+    totalWealth: rentingInvestmentValue,
     yearlyIncome: currentYearlyIncome,
     leftoverIncome: 0,
     leftoverInvestmentValue: rentingInvestmentValue,
-    securityDeposit,
     initialInvestment: rentingInitialInvestment, // ADDED: Show initial investment separately
     additionalContributions: 0, // ADDED: No additional contributions in year 0
     monthlyData: monthlyRentingData[0]
@@ -291,8 +284,8 @@ export const calculateComparison = (formData: FormData): ComparisonResults => {
   yearlyComparisons.push({
     year: 0,
     buyingWealth: downPaymentAmount + buyingInvestmentValue,
-    rentingWealth: rentingInvestmentValue + securityDeposit,
-    difference: (downPaymentAmount + buyingInvestmentValue) - (rentingInvestmentValue + securityDeposit),
+    rentingWealth: rentingInvestmentValue,
+    difference: (downPaymentAmount + buyingInvestmentValue) - (rentingInvestmentValue),
     cumulativeBuyingCosts: 0,
     cumulativeRentingCosts: 0,
     yearlyIncome: currentYearlyIncome,
@@ -432,7 +425,6 @@ export const calculateComparison = (formData: FormData): ComparisonResults => {
         rentersInsurance: monthlyRentersInsurance,
         leftoverIncome: rentingLeftoverMonthlyIncome,
         investmentValue: rentingInvestmentValue,
-        securityDeposit,
         // Add these fields to monthly data
         initialInvestment: rentingInitialInvestment,
         additionalContributions: rentingTotalContributions,
@@ -466,8 +458,8 @@ export const calculateComparison = (formData: FormData): ComparisonResults => {
     const buyingWealthBeforeTax = homeEquity + buyingInvestmentValue;
     const buyingWealthAfterTax = homeEquity + (buyingInvestmentValue - buyingCapitalGainsTax);
     
-    const rentingWealthBeforeTax = rentingInvestmentValue + securityDeposit;
-    const rentingWealthAfterTax = rentingInvestmentValue - rentingCapitalGainsTax + securityDeposit;
+    const rentingWealthBeforeTax = rentingInvestmentValue;
+    const rentingWealthAfterTax = rentingInvestmentValue - rentingCapitalGainsTax;
     
     // Calculate true average monthly savings
     const avgMonthlyBuyingSavings = monthlyBuyingSavings.reduce((sum, val) => sum + val, 0) / 12;
@@ -507,7 +499,6 @@ export const calculateComparison = (formData: FormData): ComparisonResults => {
       yearlyIncome: currentYearlyIncome,
       leftoverIncome: yearlyRentingLeftoverIncome,
       leftoverInvestmentValue: rentingInvestmentValue - rentingCapitalGainsTax,
-      securityDeposit,
       monthlyData: monthlyRentingData[year]
     });
     
