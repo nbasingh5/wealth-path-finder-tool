@@ -1,5 +1,12 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
 import { formatCurrency } from "@/lib/calculations";
+import { HelpCircle } from "lucide-react";
+import { 
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger
+} from "@/components/ui/tooltip";
 
 interface MonthlyBreakdownTableProps {
   year: number;
@@ -15,6 +22,13 @@ const MonthlyBreakdownTable = ({ year, columns, rowData }: MonthlyBreakdownTable
     // For Year 0, we'll show the initial values for all 12 months
     if (year === 0) {
       for (let month = 1; month <= 12; month++) {
+        // For Year 0, amount invested is just the initial investment
+        let amountInvested = rowData.initialInvestment || 0;
+        
+        const investmentEarnings = rowData.leftoverInvestmentValue 
+          ? Math.max(0, rowData.leftoverInvestmentValue - amountInvested)
+          : 0;
+          
         monthlyData.push({
           month,
           yearlyIncome: rowData.yearlyIncome / 12, // Monthly income
@@ -30,8 +44,9 @@ const MonthlyBreakdownTable = ({ year, columns, rowData }: MonthlyBreakdownTable
           homeEquity: rowData.homeEquity,
           loanBalance: rowData.loanBalance,
           leftoverInvestmentValue: rowData.leftoverInvestmentValue,
+          amountInvested: amountInvested,
+          investmentEarnings: investmentEarnings,
           monthlySavings: 0,
-          amountInvested: 0,
           investmentValueBeforeTax: rowData.investmentValueBeforeTax ? rowData.investmentValueBeforeTax / 12 : 0,
           capitalGainsTaxPaid: 0,
           investmentValueAfterTax: rowData.investmentValueAfterTax ? rowData.investmentValueAfterTax / 12 : 0,
@@ -43,6 +58,16 @@ const MonthlyBreakdownTable = ({ year, columns, rowData }: MonthlyBreakdownTable
     
     // For years > 0, we'll calculate estimated monthly values
     for (let month = 1; month <= 12; month++) {
+      // We'll use the investment data directly from rowData when available
+      let amountInvested = rowData.amountInvested || 0;
+      let investmentEarnings = 0;
+      
+      // For monthly investment earnings, we distribute the annual earnings over months
+      if (rowData.investmentEarnings !== undefined) {
+        // Scale earnings by month (simulate gradual growth)
+        investmentEarnings = rowData.investmentEarnings * (month / 12);
+      }
+      
       // Create proportional monthly values based on yearly totals
       monthlyData.push({
         month,
@@ -63,8 +88,10 @@ const MonthlyBreakdownTable = ({ year, columns, rowData }: MonthlyBreakdownTable
         loanBalance: calculateMonthlyValue(rowData.loanBalance, month, year),
         leftoverInvestmentValue: calculateMonthlyValue(rowData.leftoverInvestmentValue, month, year),
         
+        amountInvested: amountInvested / 12 * month, // Scale by month
+        investmentEarnings: calculateMonthlyValue(investmentEarnings, month, year),
+        
         monthlySavings: rowData.monthlySavings || 0,
-        amountInvested: calculateMonthlyValue(rowData.amountInvested, month, year),
         investmentValueBeforeTax: calculateMonthlyValue(rowData.investmentValueBeforeTax, month, year),
         capitalGainsTaxPaid: rowData.capitalGainsTaxPaid ? rowData.capitalGainsTaxPaid / 12 : 0,
         investmentValueAfterTax: calculateMonthlyValue(rowData.investmentValueAfterTax, month, year),
@@ -80,12 +107,73 @@ const MonthlyBreakdownTable = ({ year, columns, rowData }: MonthlyBreakdownTable
   const calculateMonthlyValue = (yearEndValue: number, month: number, year: number) => {
     if (!yearEndValue || year === 0) return yearEndValue;
     
-    // Find the previous year's value from rowData if available
-    // This would require rowData to include the previous year's values
-    // If not available, we'll just use a simple linear approximation
-    
     // Simple linear approximation (month/12 of the yearly change)
     return yearEndValue * (month / 12);
+  };
+  
+  // Get tooltip explanation for a column
+  const getTooltipContent = (key: string) => {
+    switch(key) {
+      case 'yearlyIncome':
+        return "Annual income divided by 12.";
+      
+      case 'mortgagePayment':
+        return "Monthly mortgage payment (principal + interest).";
+      
+      case 'principalPaid':
+        return "Amount paid toward reducing the loan principal this month.";
+      
+      case 'interestPaid':
+        return "Interest portion of the mortgage payment this month.";
+      
+      case 'propertyTaxes':
+        return "Monthly property tax payment.";
+      
+      case 'homeInsurance':
+        return "Monthly home insurance payment.";
+      
+      case 'maintenanceCosts':
+        return "Monthly home maintenance costs.";
+      
+      case 'homeValue':
+        return "Estimated home value for this month.";
+      
+      case 'homeEquity':
+        return "Home value minus remaining loan balance.";
+      
+      case 'loanBalance':
+        return "Remaining mortgage balance.";
+      
+      case 'leftoverIncome':
+        return "Monthly income minus housing expenses.";
+      
+      case 'monthlySavings':
+        return "Amount available for investment this month.";
+      
+      case 'amountInvested':
+        return "Cumulative contributions to investments.";
+      
+      case 'investmentEarnings':
+        return "Investment returns for this month.";
+      
+      case 'leftoverInvestmentValue':
+        return "Value of investments at this point in the year.";
+      
+      case 'investmentValueBeforeTax':
+        return "Value of investments before capital gains tax.";
+      
+      case 'capitalGainsTaxPaid':
+        return "Estimated capital gains tax for this month.";
+      
+      case 'investmentValueAfterTax':
+        return "Investment value after capital gains tax.";
+      
+      case 'totalWealth':
+        return "Total wealth including home equity and investments.";
+      
+      default:
+        return "Value for month " + key;
+    }
   };
   
   const monthlyData = generateMonthlyData();
@@ -109,9 +197,21 @@ const MonthlyBreakdownTable = ({ year, columns, rowData }: MonthlyBreakdownTable
                 <TableCell>{monthData.month}</TableCell>
                 {columns.slice(1).map(col => (
                   <TableCell key={col.key}>
-                    {typeof monthData[col.key] === 'number'
-                      ? formatCurrency(monthData[col.key])
-                      : monthData[col.key] || '-'}
+                    <TooltipProvider>
+                      <Tooltip delayDuration={300}>
+                        <TooltipTrigger asChild>
+                          <div className="flex items-center gap-1">
+                            {typeof monthData[col.key] === 'number'
+                              ? formatCurrency(monthData[col.key])
+                              : monthData[col.key] || '-'}
+                            <HelpCircle className="h-3 w-3 text-muted-foreground inline-block hover:text-primary" />
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-xs text-xs">
+                          {getTooltipContent(col.key)}
+                          </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </TableCell>
                 ))}
               </TableRow>

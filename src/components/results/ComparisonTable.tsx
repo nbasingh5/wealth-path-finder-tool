@@ -42,14 +42,15 @@ const ComparisonTable = ({ results }: ComparisonTableProps) => {
     { key: "yearlyIncome", label: "Annual Income" },
     { key: "buyingLeftoverIncome", label: "Buying Leftover Income" },
     { key: "rentingLeftoverIncome", label: "Renting Leftover Income" },
-    { key: "buyingLeftoverInvestmentValue", label: "Buying Leftover Investments" },
-    { key: "rentingLeftoverInvestmentValue", label: "Renting Leftover Investments" },
+    { key: "buyingLeftoverInvestmentValue", label: "Buying Investments" },
+    { key: "rentingLeftoverInvestmentValue", label: "Renting Investments" },
     { key: "buyingWealth", label: "Buying Wealth" },
     { key: "rentingWealth", label: "Renting Wealth" },
     { key: "difference", label: "Difference" },
     { key: "betterOption", label: "Better Option" }
   ];
 
+  // Updated buying columns with investment earnings instead of initial/additional investments
   const buyingColumns = [
     { key: "year", label: "Year" },
     { key: "yearlyIncome", label: "Annual Income" },
@@ -60,8 +61,8 @@ const ComparisonTable = ({ results }: ComparisonTableProps) => {
     { key: "homeInsurance", label: "Insurance" },
     { key: "maintenanceCosts", label: "Maintenance" },
     { key: "leftoverIncome", label: "Leftover Income" },
-    { key: "initialInvestment", label: "Initial Investment" },
-    { key: "additionalContributions", label: "Additional Contributions" },
+    { key: "amountInvested", label: "Amount Invested" },
+    { key: "investmentEarnings", label: "Investment Earnings" },
     { key: "leftoverInvestmentValue", label: "Total Investments" },
     { key: "loanBalance", label: "Loan Balance" },
     { key: "homeValue", label: "Home Value" },
@@ -69,23 +70,22 @@ const ComparisonTable = ({ results }: ComparisonTableProps) => {
     { key: "totalWealth", label: "Total Wealth" }
   ];
 
+  // Updated renting columns with investment earnings
   const rentingColumns = [
     { key: "year", label: "Year" },
     { key: "yearlyIncome", label: "Annual Income" },
     { key: "totalRent", label: "Total Rent" },
     { key: "leftoverIncome", label: "Leftover Income" },
     { key: "monthlySavings", label: "Monthly Savings" },
-    { key: "initialInvestment", label: "Initial Investment" },
-    { key: "additionalContributions", label: "Additional Contributions" },
-    { key: "amountInvested", label: "Total Invested" },
+    { key: "amountInvested", label: "Amount Invested" },
+    { key: "investmentEarnings", label: "Investment Earnings" },
     { key: "investmentValueBeforeTax", label: "Investment Value (Before Tax)" },
     { key: "capitalGainsTaxPaid", label: "Capital Gains Tax" },
     { key: "investmentValueAfterTax", label: "Investment Value (After Tax)" },
-    { key: "securityDeposit", label: "Security Deposit" },
     { key: "totalWealth", label: "Total Wealth" }
   ];
 
-  // Add computed "betterOption" field to summary data for display
+  // Add investment earnings calculations to the data
   const enhancedYearlyComparisons = yearlyComparisons.map(year => {
     let betterOption: React.ReactNode;
     
@@ -115,6 +115,95 @@ const ComparisonTable = ({ results }: ComparisonTableProps) => {
     };
   });
 
+  // Process buying data to add investment earnings
+  const enhancedBuyingResults = buyingResults.map((year, index) => {
+    // For amount invested, we'll use the cumulative contributions
+    let amountInvested = 0;
+    
+    if (index === 0) {
+      amountInvested = year.initialInvestment || 0;
+      // No investment earnings in year 0
+      return {
+        ...year,
+        amountInvested,
+        investmentEarnings: 0
+      };
+    } else {
+      // Calculate cumulative investment (previous investments + this year's contribution)
+      const prevYear = buyingResults[index - 1];
+      
+      // This year's contribution is the leftover income
+      const yearContribution = year.leftoverIncome || 0;
+      
+      // Previous year's investment value
+      const prevInvestmentValue = prevYear.leftoverInvestmentValue || 0;
+      
+      // Current year's investment value
+      const currentInvestmentValue = year.leftoverInvestmentValue || 0;
+      
+      // Investment earnings = Current value - Previous value - New contributions
+      const investmentEarnings = Math.max(0, currentInvestmentValue - prevInvestmentValue - yearContribution);
+      
+      // Amount invested is the running total of all contributions
+      if (index === 1) {
+        // For year 1, start with initial investment + year 1's contribution
+        amountInvested = (prevYear.initialInvestment || 0) + yearContribution;
+      } else {
+        // For later years, add to previous year's amount invested
+        amountInvested = (prevYear.amountInvested || 0) + yearContribution;
+      }
+      
+      return {
+        ...year,
+        amountInvested,
+        investmentEarnings
+      };
+    }
+  });
+    }
+  });
+  
+  // Process renting data to add investment earnings
+  const enhancedRentingResults = rentingResults.map((year, index) => {
+    if (index === 0) {
+      // For Year 0, initialize values
+      return {
+        ...year,
+        amountInvested: year.initialInvestment || 0,
+        investmentEarnings: 0
+      };
+    } else {
+      const prevYear = rentingResults[index - 1];
+      
+      // This year's contribution is the leftover income
+      const yearContribution = year.leftoverIncome || 0;
+      
+      // Previous year's investment value (after tax)
+      const prevInvestmentValue = prevYear.investmentValueAfterTax || 0;
+      
+      // Current year's investment value (before tax)
+      const currentInvestmentValue = year.investmentValueBeforeTax || 0;
+      
+      // Investment earnings = Current value before tax - Previous value after tax - New contributions
+      const investmentEarnings = Math.max(0, currentInvestmentValue - prevInvestmentValue - yearContribution);
+      
+      // Amount invested is the running total of all contributions
+      let amountInvested = 0;
+      if (index === 1) {
+        // For year 1, start with initial investment + year 1's contribution
+        amountInvested = (prevYear.initialInvestment || 0) + yearContribution;
+      } else {
+        // For later years, add to previous year's amount invested
+        amountInvested = (prevYear.amountInvested || 0) + yearContribution;
+      }
+      
+      return {
+        ...year,
+        amountInvested,
+        investmentEarnings
+      };
+  });
+
   return (
     <Card className="mt-6">
       <CardHeader>
@@ -140,7 +229,7 @@ const ComparisonTable = ({ results }: ComparisonTableProps) => {
           
           <TabsContent value="buying">
             <ComparisonTableTab
-              data={buyingResults}
+              data={enhancedBuyingResults}
               columns={buyingColumns}
               tabId="buying"
               expandedRows={expandedRows}
@@ -150,7 +239,7 @@ const ComparisonTable = ({ results }: ComparisonTableProps) => {
           
           <TabsContent value="renting">
             <ComparisonTableTab
-              data={rentingResults}
+              data={enhancedRentingResults}
               columns={rentingColumns}
               tabId="renting"
               expandedRows={expandedRows}
