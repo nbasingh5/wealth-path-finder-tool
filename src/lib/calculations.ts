@@ -1,3 +1,4 @@
+
 import { 
   BuyingInputs, 
   ComparisonResults, 
@@ -193,17 +194,68 @@ export const calculateComparison = (formData: FormData): ComparisonResults => {
   
   let monthlyRent = renting.monthlyRent;
   let totalInvestment = 0;
-  let currentInvestmentValue = general.currentSavings; // Start with current savings
-  let totalRentingInvestmentValue = general.currentSavings;
+  let currentInvestmentValue = 0; // Will add current savings in year 0
+  let totalRentingInvestmentValue = 0; // Will add current savings in year 0
   let totalCapitalGainsTaxPaid = 0;
   
   let cumulativeBuyingCosts = 0;
   let cumulativeRentingCosts = 0;
   let currentYearlyIncome = general.annualIncome;
-
+  
   // In buying scenario, downpayment is immediately spent
   let buyingAvailableFunds = general.currentSavings - downPaymentAmount;
+  
+  // Start with year 0 (initial state)
+  // Year 0 represents the starting point before any payments are made
+  buyingResults.push({
+    year: 0,
+    mortgagePayment: 0,
+    principalPaid: 0,
+    interestPaid: 0,
+    loanBalance: loanAmount,
+    propertyTaxes: 0,
+    homeInsurance: 0,
+    maintenanceCosts: 0,
+    homeValue: initialHomeValue,
+    homeEquity: downPaymentAmount,
+    totalWealth: downPaymentAmount + buyingAvailableFunds,
+    yearlyIncome: currentYearlyIncome,
+    leftoverIncome: currentYearlyIncome,
+    leftoverInvestmentValue: buyingAvailableFunds
+  });
+  
+  rentingResults.push({
+    year: 0,
+    totalRent: 0,
+    monthlySavings: 0,
+    amountInvested: 0,
+    investmentValueBeforeTax: general.currentSavings,
+    capitalGainsTaxPaid: 0,
+    investmentValueAfterTax: general.currentSavings,
+    totalWealth: general.currentSavings,
+    yearlyIncome: currentYearlyIncome,
+    leftoverIncome: currentYearlyIncome,
+    leftoverInvestmentValue: general.currentSavings
+  });
+  
+  yearlyComparisons.push({
+    year: 0,
+    buyingWealth: downPaymentAmount + buyingAvailableFunds,
+    rentingWealth: general.currentSavings,
+    difference: (downPaymentAmount + buyingAvailableFunds) - general.currentSavings,
+    cumulativeBuyingCosts: 0,
+    cumulativeRentingCosts: 0,
+    yearlyIncome: currentYearlyIncome,
+    buyingLeftoverIncome: currentYearlyIncome,
+    rentingLeftoverIncome: currentYearlyIncome,
+    buyingLeftoverInvestmentValue: buyingAvailableFunds,
+    rentingLeftoverInvestmentValue: general.currentSavings
+  });
 
+  // Track leftover investments separately
+  let buyingLeftoverInvestmentValue = buyingAvailableFunds;
+  let rentingLeftoverInvestmentValue = general.currentSavings;
+  
   // Calculate for each year
   for (let year = 1; year <= timeHorizonYears; year++) {
     // Buying scenario calculations for this year
@@ -235,6 +287,13 @@ export const calculateComparison = (formData: FormData): ComparisonResults => {
       monthlyMaintenanceCosts;
     
     const monthlySavings = monthlyBuyingCost - monthlyRent;
+    const monthlyIncome = currentYearlyIncome / 12;
+    
+    // Track leftover income after housing costs
+    let buyingLeftoverMonthlyIncome = monthlyIncome - monthlyBuyingCost;
+    let rentingLeftoverMonthlyIncome = monthlyIncome - monthlyRent;
+    let totalBuyingLeftoverIncome = 0;
+    let totalRentingLeftoverIncome = 0;
     
     // Calculate for each month in this year
     for (let month = 1; month <= 12; month++) {
@@ -270,6 +329,25 @@ export const calculateComparison = (formData: FormData): ComparisonResults => {
         totalInvestment += monthlySavings;
       }
       
+      // Track leftover monthly income
+      totalBuyingLeftoverIncome += buyingLeftoverMonthlyIncome;
+      totalRentingLeftoverIncome += rentingLeftoverMonthlyIncome;
+      
+      // Invest leftover income
+      buyingLeftoverInvestmentValue = calculateInvestmentReturnForMonth(
+        buyingLeftoverInvestmentValue,
+        Math.max(0, buyingLeftoverMonthlyIncome), // Don't allow negative investments
+        investment.annualReturn,
+        1
+      );
+      
+      rentingLeftoverInvestmentValue = calculateInvestmentReturnForMonth(
+        rentingLeftoverInvestmentValue,
+        Math.max(0, rentingLeftoverMonthlyIncome), // Don't allow negative investments
+        investment.annualReturn,
+        1
+      );
+      
       // Update investment value for renting scenario
       totalRentingInvestmentValue = calculateInvestmentReturnForMonth(
         totalRentingInvestmentValue,
@@ -293,20 +371,20 @@ export const calculateComparison = (formData: FormData): ComparisonResults => {
     // Calculate home equity
     const homeEquity = currentHomeValue - loanBalance;
     
-    // Calculate total wealth for buying (home equity + available funds)
+    // Calculate total wealth for buying (home equity + available funds + leftover investment)
     const buyingWealth = homeEquity + buyingAvailableFunds;
     
     // Calculate capital gains tax for renting scenario
     const yearlyCapitalGainsTax = calculateCapitalGainsTax(
       general.currentSavings + totalInvestment,
-      totalRentingInvestmentValue,
+      totalRentingInvestmentValue + rentingLeftoverInvestmentValue,
       investment.capitalGainsTaxRate
     );
     
     totalCapitalGainsTaxPaid += yearlyCapitalGainsTax;
     
-    // Calculate total wealth for renting
-    const investmentValueAfterTax = totalRentingInvestmentValue - yearlyCapitalGainsTax;
+    // Calculate total wealth for renting (investment value after tax)
+    const investmentValueAfterTax = totalRentingInvestmentValue + rentingLeftoverInvestmentValue - yearlyCapitalGainsTax;
     const rentingWealth = investmentValueAfterTax;
     
     // Add yearly buying result
@@ -321,8 +399,10 @@ export const calculateComparison = (formData: FormData): ComparisonResults => {
       maintenanceCosts: yearlyMaintenanceCosts,
       homeValue: currentHomeValue,
       homeEquity,
-      totalWealth: buyingWealth,
-      yearlyIncome: currentYearlyIncome
+      totalWealth: buyingWealth + buyingLeftoverInvestmentValue,
+      yearlyIncome: currentYearlyIncome,
+      leftoverIncome: totalBuyingLeftoverIncome,
+      leftoverInvestmentValue: buyingLeftoverInvestmentValue
     });
     
     // Add yearly renting result
@@ -333,20 +413,26 @@ export const calculateComparison = (formData: FormData): ComparisonResults => {
       amountInvested: yearlyInvestment,
       investmentValueBeforeTax: totalRentingInvestmentValue,
       capitalGainsTaxPaid: yearlyCapitalGainsTax,
-      investmentValueAfterTax,
+      investmentValueAfterTax: totalRentingInvestmentValue - yearlyCapitalGainsTax,
       totalWealth: rentingWealth,
-      yearlyIncome: currentYearlyIncome
+      yearlyIncome: currentYearlyIncome,
+      leftoverIncome: totalRentingLeftoverIncome,
+      leftoverInvestmentValue: rentingLeftoverInvestmentValue
     });
     
     // Add yearly comparison
     yearlyComparisons.push({
       year,
-      buyingWealth,
+      buyingWealth: buyingWealth + buyingLeftoverInvestmentValue,
       rentingWealth,
-      difference: buyingWealth - rentingWealth,
+      difference: (buyingWealth + buyingLeftoverInvestmentValue) - rentingWealth,
       cumulativeBuyingCosts,
       cumulativeRentingCosts,
-      yearlyIncome: currentYearlyIncome
+      yearlyIncome: currentYearlyIncome,
+      buyingLeftoverIncome: totalBuyingLeftoverIncome,
+      rentingLeftoverIncome: totalRentingLeftoverIncome,
+      buyingLeftoverInvestmentValue: buyingLeftoverInvestmentValue,
+      rentingLeftoverInvestmentValue: rentingLeftoverInvestmentValue
     });
     
     // Update rent for next year based on annual increase

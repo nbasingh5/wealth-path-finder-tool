@@ -53,6 +53,8 @@ export interface YearlyBuyingResult {
   homeEquity: number;
   totalWealth: number;
   yearlyIncome: number;
+  leftoverIncome: number;
+  leftoverInvestmentValue: number;
 }
 
 export interface YearlyRentingResult {
@@ -65,6 +67,8 @@ export interface YearlyRentingResult {
   investmentValueAfterTax: number;
   totalWealth: number;
   yearlyIncome: number;
+  leftoverIncome: number;
+  leftoverInvestmentValue: number;
 }
 
 export interface YearlyComparison {
@@ -75,6 +79,10 @@ export interface YearlyComparison {
   cumulativeBuyingCosts: number;
   cumulativeRentingCosts: number;
   yearlyIncome: number;
+  buyingLeftoverIncome: number;
+  rentingLeftoverIncome: number;
+  buyingLeftoverInvestmentValue: number;
+  rentingLeftoverInvestmentValue: number;
 }
 
 export interface ComparisonResults {

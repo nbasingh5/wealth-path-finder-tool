@@ -1,3 +1,4 @@
+
 import { ComparisonResults } from "@/lib/types";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
 import { formatCurrency } from "@/lib/calculations";
@@ -70,23 +71,31 @@ const ExpandableRow = ({ rowData, isExpanded, onToggle, columns }: ExpandableRow
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {[...Array(12)].map((_, i) => {
-                      const month = i + 1;
-                      return (
-                        <TableRow key={month}>
-                          <TableCell>{month}</TableCell>
-                          {columns.slice(1).map(col => (
-                            <TableCell key={col.key}>
-                              {typeof rowData[col.key] === 'number'
-                                ? col.key === 'yearlyIncome' 
-                                  ? formatCurrency(rowData[col.key] / 12)
-                                  : formatCurrency(rowData[col.key] / 12)
-                                : '-'}
-                            </TableCell>
-                          ))}
-                        </TableRow>
-                      );
-                    })}
+                    {year > 0 ? (
+                      [...Array(12)].map((_, i) => {
+                        const month = i + 1;
+                        return (
+                          <TableRow key={month}>
+                            <TableCell>{month}</TableCell>
+                            {columns.slice(1).map(col => (
+                              <TableCell key={col.key}>
+                                {typeof rowData[col.key] === 'number'
+                                  ? col.key === 'yearlyIncome' || col.key === 'leftoverIncome'
+                                    ? formatCurrency(rowData[col.key] / 12)
+                                    : formatCurrency(rowData[col.key] / 12)
+                                  : '-'}
+                              </TableCell>
+                            ))}
+                          </TableRow>
+                        );
+                      })
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={columns.length} className="text-center py-4">
+                          Year 0 represents initial values before any payments
+                        </TableCell>
+                      </TableRow>
+                    )}
                   </TableBody>
                 </Table>
               </div>
@@ -115,6 +124,10 @@ const ComparisonTable = ({ results }: ComparisonTableProps) => {
   const summaryColumns = [
     { key: "year", label: "Year" },
     { key: "yearlyIncome", label: "Annual Income" },
+    { key: "buyingLeftoverIncome", label: "Buying Leftover Income" },
+    { key: "rentingLeftoverIncome", label: "Renting Leftover Income" },
+    { key: "buyingLeftoverInvestmentValue", label: "Buying Leftover Investments" },
+    { key: "rentingLeftoverInvestmentValue", label: "Renting Leftover Investments" },
     { key: "buyingWealth", label: "Buying Wealth" },
     { key: "rentingWealth", label: "Renting Wealth" },
     { key: "difference", label: "Difference" },
@@ -127,10 +140,12 @@ const ComparisonTable = ({ results }: ComparisonTableProps) => {
     { key: "mortgagePayment", label: "Mortgage Payment" },
     { key: "principalPaid", label: "Principal Paid" },
     { key: "interestPaid", label: "Interest Paid" },
-    { key: "loanBalance", label: "Loan Balance" },
     { key: "propertyTaxes", label: "Property Taxes" },
     { key: "homeInsurance", label: "Insurance" },
     { key: "maintenanceCosts", label: "Maintenance" },
+    { key: "leftoverIncome", label: "Leftover Income" },
+    { key: "leftoverInvestmentValue", label: "Leftover Investments" },
+    { key: "loanBalance", label: "Loan Balance" },
     { key: "homeValue", label: "Home Value" },
     { key: "homeEquity", label: "Home Equity" },
     { key: "totalWealth", label: "Total Wealth" }
@@ -140,8 +155,10 @@ const ComparisonTable = ({ results }: ComparisonTableProps) => {
     { key: "year", label: "Year" },
     { key: "yearlyIncome", label: "Annual Income" },
     { key: "totalRent", label: "Total Rent" },
+    { key: "leftoverIncome", label: "Leftover Income" },
     { key: "monthlySavings", label: "Monthly Savings" },
     { key: "amountInvested", label: "Amount Invested" },
+    { key: "leftoverInvestmentValue", label: "Leftover Investments" },
     { key: "investmentValueBeforeTax", label: "Investment Value (Before Tax)" },
     { key: "capitalGainsTaxPaid", label: "Capital Gains Tax" },
     { key: "investmentValueAfterTax", label: "Investment Value (After Tax)" },
