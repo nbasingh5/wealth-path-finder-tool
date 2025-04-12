@@ -1,4 +1,4 @@
-
+// src/lib/types.ts - Updated with monthly data tracking
 // Form Input Types
 export interface GeneralInputs {
   timeHorizon: number;
@@ -39,6 +39,42 @@ export interface FormData {
   investment: InvestmentInputs;
 }
 
+// Monthly Data Types
+export interface MonthlyBuyingDataPoint {
+  month: number;
+  homeValue: number;
+  homeEquity: number;
+  loanBalance: number;
+  monthlyIncome: number;
+  mortgagePayment: number;
+  principalPayment: number;
+  interestPayment: number;
+  propertyTaxes: number;
+  homeInsurance: number;
+  maintenanceCosts: number;
+  leftoverIncome: number;
+  investmentValue: number;
+  initialInvestment: number; // Added field
+  additionalContributions: number; // Added field
+  monthlySavings: number; // Added field
+}
+
+export interface MonthlyRentingDataPoint {
+  month: number;
+  monthlyIncome: number;
+  rent: number;
+  rentersInsurance: number;
+  leftoverIncome: number;
+  investmentValue: number;
+  securityDeposit: number;
+  initialInvestment: number; // Added field
+  additionalContributions: number; // Added field
+  monthlySavings: number; // Added field
+}
+
+// For simplicity in the interface, use specific types rather than a union type
+// (removed MonthlyDataPoint union type that was causing the type error)
+
 // Calculation Result Types
 export interface YearlyBuyingResult {
   year: number;
@@ -55,6 +91,9 @@ export interface YearlyBuyingResult {
   yearlyIncome: number;
   leftoverIncome: number;
   leftoverInvestmentValue: number;
+  initialInvestment?: number; // Added to show initial investment
+  additionalContributions?: number; // Added to show new contributions
+  monthlyData?: MonthlyBuyingDataPoint[]; // Optional for backward compatibility
 }
 
 export interface YearlyRentingResult {
@@ -69,6 +108,10 @@ export interface YearlyRentingResult {
   yearlyIncome: number;
   leftoverIncome: number;
   leftoverInvestmentValue: number;
+  securityDeposit?: number; // Optional for backward compatibility
+  initialInvestment?: number; // Added to show initial investment
+  additionalContributions?: number; // Added to show new contributions
+  monthlyData?: MonthlyRentingDataPoint[]; // Optional for backward compatibility
 }
 
 export interface YearlyComparison {

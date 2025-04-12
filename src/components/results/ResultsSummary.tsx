@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
 import { ComparisonResults } from "@/lib/types";
@@ -14,6 +13,46 @@ const ResultsSummary = ({ results }: ResultsSummaryProps) => {
     return null;
   }
 
+  // Check if the summary is available and has valid values
+  if (!results.summary || 
+      typeof results.summary.finalBuyingWealth !== 'number' || 
+      typeof results.summary.finalRentingWealth !== 'number') {
+    console.error("Missing or invalid summary data in results:", results);
+    
+    // Attempt to recalculate summary from the last elements of the arrays if available
+    let finalBuyingWealth = 0;
+    let finalRentingWealth = 0;
+    let difference = 0;
+    let betterOption: "buying" | "renting" | "equal" = "equal";
+    
+    if (results.buyingResults && results.buyingResults.length > 0 && 
+        results.rentingResults && results.rentingResults.length > 0) {
+      
+      const lastBuyingResult = results.buyingResults[results.buyingResults.length - 1];
+      const lastRentingResult = results.rentingResults[results.rentingResults.length - 1];
+      
+      if (lastBuyingResult && lastRentingResult) {
+        finalBuyingWealth = lastBuyingResult.totalWealth;
+        finalRentingWealth = lastRentingResult.totalWealth;
+        difference = finalBuyingWealth - finalRentingWealth;
+        
+        if (difference > 1000) {
+          betterOption = "buying";
+        } else if (difference < -1000) {
+          betterOption = "renting";
+        }
+      }
+    }
+    
+    // Use the recalculated values if summary is missing
+    results.summary = {
+      finalBuyingWealth,
+      finalRentingWealth,
+      difference: Math.abs(difference),
+      betterOption
+    };
+  }
+  
   const {
     summary: { finalBuyingWealth, finalRentingWealth, difference, betterOption },
   } = results;

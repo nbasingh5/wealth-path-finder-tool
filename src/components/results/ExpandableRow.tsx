@@ -1,4 +1,3 @@
-
 import { TableCell, TableRow } from "../ui/table";
 import { formatCurrency } from "@/lib/calculations";
 import { ChevronDown, ChevronUp } from "lucide-react";
@@ -13,6 +12,17 @@ interface ExpandableRowProps {
 
 const ExpandableRow = ({ rowData, isExpanded, onToggle, columns }: ExpandableRowProps) => {
   const year = rowData.year;
+  
+  // For debugging: log the row data to see what fields are available
+  if (process.env.NODE_ENV === 'development') {
+    console.debug(`Row data for year ${year}:`, 
+      Object.keys(rowData).filter(key => ['initialInvestment', 'additionalContributions', 'monthlySavings'].includes(key))
+        .reduce((obj, key) => {
+          obj[key] = rowData[key];
+          return obj;
+        }, {})
+    );
+  }
   
   return (
     <>
@@ -32,7 +42,9 @@ const ExpandableRow = ({ rowData, isExpanded, onToggle, columns }: ExpandableRow
                 ? rowData[col.key]
                 : typeof rowData[col.key] === 'number'
                   ? formatCurrency(rowData[col.key]) 
-                  : rowData[col.key]
+                  : rowData[col.key] !== undefined
+                    ? rowData[col.key]
+                    : '-'
             )}
           </TableCell>
         ))}

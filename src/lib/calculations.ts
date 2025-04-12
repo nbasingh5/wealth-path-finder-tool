@@ -1,26 +1,20 @@
+// src/lib/calculations.ts
+// This file serves as a central export point for all calculation utilities
 
-// This file now serves as a simple re-export from the modular utilities
+// Export the formatters
+export { formatCurrency, formatPercentage } from "./utils/formatters";
 
+// Export the fixed calculation utilities from our new implementation
 export {
-  // formatters
-  formatCurrency,
-  formatPercentage,
-  
-  // propertyUtils
-  getAppreciationRate,
+  calculateMonthlyMortgagePayment,
+  calculateMortgageAmortizationForMonth,
   calculateMonthlyPropertyTaxes,
   calculateMonthlyHomeInsurance,
   calculateMonthlyMaintenanceCosts,
-  
-  // mortgageUtils
-  calculateMonthlyMortgagePayment,
-  calculateMortgageAmortizationForMonth,
-  
-  // investmentUtils
   calculateInvestmentReturnForMonth,
   calculateCapitalGainsTax,
-  
-  // calculationEngine
   calculateComparison
-} from './utils/index';
+} from "./utils/calculationEngine";
 
+// Re-export property utilities for backward compatibility
+export { getAppreciationRate } from "./utils/propertyUtils";

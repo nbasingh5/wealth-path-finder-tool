@@ -23,7 +23,7 @@ const Index = () => {
     <div className="min-h-screen flex flex-col">
       <Header />
       
-      <main className="flex-grow py-8 px-4 md:px-8 max-w-7xl mx-auto w-full">
+      <main className="flex-grow py-8 px-4 md:px-8 max-w-90rem mx-auto w-full">
         <InfoCardSection />
         
         <FormContainer 
