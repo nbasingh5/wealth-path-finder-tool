@@ -8,7 +8,7 @@ const defaultGeneral: GeneralInputs = {
   timeHorizon: 30,
   annualIncome: 100000,
   incomeIncrease: false,
-  annualIncomeGrowth: 3,
+  annualIncomeGrowthRate: 3,
   currentSavings: 50000,
 };
 

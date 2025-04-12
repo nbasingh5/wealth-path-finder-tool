@@ -1,4 +1,3 @@
-
 import { 
   BuyingInputs, 
   ComparisonResults, 
@@ -200,6 +199,7 @@ export const calculateComparison = (formData: FormData): ComparisonResults => {
   
   let cumulativeBuyingCosts = 0;
   let cumulativeRentingCosts = 0;
+  let currentYearlyIncome = general.annualIncome;
 
   // In buying scenario, downpayment is immediately spent
   let buyingAvailableFunds = general.currentSavings - downPaymentAmount;
@@ -321,7 +321,8 @@ export const calculateComparison = (formData: FormData): ComparisonResults => {
       maintenanceCosts: yearlyMaintenanceCosts,
       homeValue: currentHomeValue,
       homeEquity,
-      totalWealth: buyingWealth
+      totalWealth: buyingWealth,
+      yearlyIncome: currentYearlyIncome
     });
     
     // Add yearly renting result
@@ -333,7 +334,8 @@ export const calculateComparison = (formData: FormData): ComparisonResults => {
       investmentValueBeforeTax: totalRentingInvestmentValue,
       capitalGainsTaxPaid: yearlyCapitalGainsTax,
       investmentValueAfterTax,
-      totalWealth: rentingWealth
+      totalWealth: rentingWealth,
+      yearlyIncome: currentYearlyIncome
     });
     
     // Add yearly comparison
@@ -343,11 +345,17 @@ export const calculateComparison = (formData: FormData): ComparisonResults => {
       rentingWealth,
       difference: buyingWealth - rentingWealth,
       cumulativeBuyingCosts,
-      cumulativeRentingCosts
+      cumulativeRentingCosts,
+      yearlyIncome: currentYearlyIncome
     });
     
     // Update rent for next year based on annual increase
     monthlyRent *= (1 + renting.annualRentIncrease / 100);
+
+    // Update income for next year if income increase is enabled
+    if (general.incomeIncrease) {
+      currentYearlyIncome *= (1 + general.annualIncomeGrowthRate / 100);
+    }
   }
   
   // Determine the better option

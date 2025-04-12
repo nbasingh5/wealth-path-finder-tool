@@ -30,8 +30,8 @@ const GeneralInputsForm = ({ values, onChange }: GeneralInputsFormProps) => {
     });
   };
 
-  const handleAnnualIncomeGrowthChange = (annualIncomeGrowth: number) => {
-    onChange({ ...values, annualIncomeGrowth });
+  const handleAnnualIncomeGrowthChange = (annualIncomeGrowthRate: number) => {
+    onChange({ ...values, annualIncomeGrowthRate });
   };
 
   const handleCurrentSavingsChange = (currentSavings: number) => {
@@ -77,9 +77,9 @@ const GeneralInputsForm = ({ values, onChange }: GeneralInputsFormProps) => {
           
           {values.incomeIncrease && (
             <PercentageInput
-              id="annualIncomeGrowth"
+              id="annualIncomeGrowthRate"
               label="Annual Income Growth"
-              value={values.annualIncomeGrowth}
+              value={values.annualIncomeGrowthRate}
               onChange={handleAnnualIncomeGrowthChange}
               description="The expected annual percentage increase in your income"
               min={0}

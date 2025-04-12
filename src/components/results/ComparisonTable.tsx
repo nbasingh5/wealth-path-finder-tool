@@ -1,4 +1,3 @@
-
 import { ComparisonResults } from "@/lib/types";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
 import { formatCurrency } from "@/lib/calculations";
@@ -21,7 +20,6 @@ interface ExpandableRowProps {
 const ExpandableRow = ({ rowData, isExpanded, onToggle, columns }: ExpandableRowProps) => {
   const year = rowData.year;
   
-  // Generate monthly data (approximation based on yearly data)
   const generateMonthlyData = (yearlyValue: number) => {
     const monthlyData = [];
     for (let month = 1; month <= 12; month++) {
@@ -80,7 +78,9 @@ const ExpandableRow = ({ rowData, isExpanded, onToggle, columns }: ExpandableRow
                           {columns.slice(1).map(col => (
                             <TableCell key={col.key}>
                               {typeof rowData[col.key] === 'number'
-                                ? formatCurrency(rowData[col.key] / 12)
+                                ? col.key === 'yearlyIncome' 
+                                  ? formatCurrency(rowData[col.key] / 12)
+                                  : formatCurrency(rowData[col.key] / 12)
                                 : '-'}
                             </TableCell>
                           ))}
@@ -114,6 +114,7 @@ const ComparisonTable = ({ results }: ComparisonTableProps) => {
 
   const summaryColumns = [
     { key: "year", label: "Year" },
+    { key: "yearlyIncome", label: "Annual Income" },
     { key: "buyingWealth", label: "Buying Wealth" },
     { key: "rentingWealth", label: "Renting Wealth" },
     { key: "difference", label: "Difference" },
@@ -122,6 +123,7 @@ const ComparisonTable = ({ results }: ComparisonTableProps) => {
 
   const buyingColumns = [
     { key: "year", label: "Year" },
+    { key: "yearlyIncome", label: "Annual Income" },
     { key: "mortgagePayment", label: "Mortgage Payment" },
     { key: "principalPaid", label: "Principal Paid" },
     { key: "interestPaid", label: "Interest Paid" },
@@ -136,6 +138,7 @@ const ComparisonTable = ({ results }: ComparisonTableProps) => {
 
   const rentingColumns = [
     { key: "year", label: "Year" },
+    { key: "yearlyIncome", label: "Annual Income" },
     { key: "totalRent", label: "Total Rent" },
     { key: "monthlySavings", label: "Monthly Savings" },
     { key: "amountInvested", label: "Amount Invested" },

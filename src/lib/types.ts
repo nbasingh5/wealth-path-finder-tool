@@ -4,7 +4,7 @@ export interface GeneralInputs {
   timeHorizon: number;
   annualIncome: number;
   incomeIncrease: boolean;
-  annualIncomeGrowth: number;
+  annualIncomeGrowthRate: number;
   currentSavings: number;
 }
 
@@ -52,6 +52,7 @@ export interface YearlyBuyingResult {
   homeValue: number;
   homeEquity: number;
   totalWealth: number;
+  yearlyIncome: number;
 }
 
 export interface YearlyRentingResult {
@@ -63,6 +64,7 @@ export interface YearlyRentingResult {
   capitalGainsTaxPaid: number;
   investmentValueAfterTax: number;
   totalWealth: number;
+  yearlyIncome: number;
 }
 
 export interface YearlyComparison {
@@ -72,6 +74,7 @@ export interface YearlyComparison {
   difference: number;
   cumulativeBuyingCosts: number;
   cumulativeRentingCosts: number;
+  yearlyIncome: number;
 }
 
 export interface ComparisonResults {
