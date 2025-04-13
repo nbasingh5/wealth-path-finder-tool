@@ -61,6 +61,9 @@ const MonthlyBreakdownTable = ({ year, columns, rowData }: MonthlyBreakdownTable
       case 'investmentEarnings':
         return "Investment returns for this month.";
       
+      case 'investmentValue':
+        return "Value of investments at this point.";
+      
       case 'leftoverInvestmentValue':
         return "Value of investments at this point in the year.";
       
@@ -127,7 +130,7 @@ const MonthlyBreakdownTable = ({ year, columns, rowData }: MonthlyBreakdownTable
                         </TooltipTrigger>
                         <TooltipContent side="top" className="max-w-xs text-xs">
                           {getTooltipContent(col.key)}
-                          </TooltipContent>
+                        </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
                   </TableCell>

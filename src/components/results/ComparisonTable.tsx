@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { useState } from "react";
 import ComparisonTableTab from "./ComparisonTableTab";
+import { calculateInvestmentEarnings } from "@/lib/utils/investmentUtils";
 
 interface ComparisonTableProps {
   results: ComparisonResults | null;
@@ -51,7 +52,7 @@ const ComparisonTable = ({ results }: ComparisonTableProps) => {
     { key: "betterOption", label: "Better Option" }
   ];
 
-  // Updated buying columns with investment earnings instead of initial/additional investments
+  // Updated buying columns with investment earnings
   const buyingColumns = [
     { key: "year", label: "Year" },
     { key: "yearlyIncome", label: "Annual Income" },
@@ -86,7 +87,7 @@ const ComparisonTable = ({ results }: ComparisonTableProps) => {
     { key: "totalWealth", label: "Total Wealth" }
   ];
 
-  // Add investment earnings calculations to the data
+  // Process the data to add missing values
   const enhancedYearlyComparisons = yearlyComparisons.map(year => {
     let betterOption: React.ReactNode;
     
@@ -132,8 +133,10 @@ const ComparisonTable = ({ results }: ComparisonTableProps) => {
       const contributionsThisYear = year.leftoverIncome || 0;
       
       // Earnings = current value - (previous value + new contributions)
-      investmentEarnings = Math.max(0, 
-        (year.leftoverInvestmentValue || 0) - (previousInvestmentValue + contributionsThisYear)
+      investmentEarnings = calculateInvestmentEarnings(
+        previousInvestmentValue,
+        year.leftoverInvestmentValue || 0,
+        contributionsThisYear
       );
     }
     
@@ -164,7 +167,11 @@ const ComparisonTable = ({ results }: ComparisonTableProps) => {
       
       // Earnings = current value before tax - (previous value + new contributions)
       const currentValue = year.investmentValueBeforeTax || year.leftoverInvestmentValue || 0;
-      investmentEarnings = Math.max(0, currentValue - (previousInvestmentValue + contributionsThisYear));
+      investmentEarnings = calculateInvestmentEarnings(
+        previousInvestmentValue,
+        currentValue,
+        contributionsThisYear
+      );
     }
     
     // Make sure amountInvested is always at least the value of the initial investment

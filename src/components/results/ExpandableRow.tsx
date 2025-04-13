@@ -1,3 +1,4 @@
+
 import { TableCell, TableRow } from "../ui/table";
 import { formatCurrency } from "@/lib/calculations";
 import { ChevronDown, ChevronUp, HelpCircle } from "lucide-react";
@@ -93,7 +94,7 @@ const ExpandableRow = ({ rowData, isExpanded, onToggle, columns }: ExpandableRow
       default:
         return "Value for year " + year;
     }
-    }
+  };
   
   return (
     <>
