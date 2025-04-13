@@ -1,3 +1,4 @@
+
 import { ComparisonResults } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
@@ -117,51 +118,66 @@ const ComparisonTable = ({ results }: ComparisonTableProps) => {
 
   // Process buying data to add investment earnings
   const enhancedBuyingResults = buyingResults.map((year, index) => {
-    // Calculate amount invested
-    let amountInvested = 0;
+    // Calculate investment earnings
+    let investmentEarnings = 0;
     
     if (index === 0) {
-      // For Year 0, use initial investment
-      amountInvested = year.initialInvestment || 0;
+      // For Year 0, there are no earnings yet
+      investmentEarnings = 0;
     } else {
-      // For Year 1+, use previous year's total wealth + current year's leftover income
+      // For subsequent years, calculate earnings as the difference between investment value
+      // and (previous investment value + new contributions)
       const prevYear = buyingResults[index - 1];
-      amountInvested = prevYear.totalWealth + year.leftoverIncome;
+      const previousInvestmentValue = prevYear.leftoverInvestmentValue || 0;
+      const contributionsThisYear = year.leftoverIncome || 0;
+      
+      // Earnings = current value - (previous value + new contributions)
+      investmentEarnings = Math.max(0, 
+        (year.leftoverInvestmentValue || 0) - (previousInvestmentValue + contributionsThisYear)
+      );
     }
     
-    // Calculate investment earnings (difference between total investment value and amount invested)
-    const investmentEarnings = year.leftoverInvestmentValue - 
-      (index === 0 ? amountInvested : (year.leftoverIncome || 0));
+    // Make sure amountInvested is always at least the value of the initial investment
+    const amountInvested = year.initialInvestment || 0;
     
     return {
       ...year,
       amountInvested,
-      investmentEarnings: Math.max(0, investmentEarnings) // Ensure we don't show negative earnings
+      investmentEarnings
     };
   });
   
   // Process renting data to add investment earnings
   const enhancedRentingResults = rentingResults.map((year, index) => {
-    // Calculate amount invested
-    let amountInvested = 0;
+    // Calculate investment earnings
+    let investmentEarnings = 0;
     
     if (index === 0) {
-      // For Year 0, use initial investment
-      amountInvested = year.initialInvestment || 0;
+      // For Year 0, there are no earnings yet
+      investmentEarnings = 0;
     } else {
-      // For Year 1+, use previous year's total wealth + current year's leftover income
+      // For subsequent years, calculate earnings as the difference between investment value
+      // and (previous investment value + new contributions)
       const prevYear = rentingResults[index - 1];
-      amountInvested = prevYear.totalWealth + year.leftoverIncome;
+      const previousInvestmentValue = prevYear.investmentValueBeforeTax || prevYear.leftoverInvestmentValue || 0;
+      const contributionsThisYear = year.leftoverIncome || 0;
+      
+      // Earnings = current value before tax - (previous value + new contributions)
+      const currentValue = year.investmentValueBeforeTax || year.leftoverInvestmentValue || 0;
+      investmentEarnings = Math.max(0, currentValue - (previousInvestmentValue + contributionsThisYear));
     }
     
-    // Calculate investment earnings
-    const investmentEarnings = year.investmentValueAfterTax - 
-      (index === 0 ? amountInvested : (year.leftoverIncome || 0));
+    // Make sure amountInvested is always at least the value of the initial investment
+    const amountInvested = year.initialInvestment || 0;
     
+    // Ensure all investment fields have values
     return {
       ...year,
       amountInvested,
-      investmentEarnings: Math.max(0, investmentEarnings) // Ensure we don't show negative earnings
+      investmentEarnings,
+      investmentValueBeforeTax: year.investmentValueBeforeTax || year.leftoverInvestmentValue || 0,
+      investmentValueAfterTax: year.investmentValueAfterTax || year.leftoverInvestmentValue || 0,
+      capitalGainsTaxPaid: year.capitalGainsTaxPaid || 0
     };
   });
 

@@ -3,20 +3,14 @@
 export * from "./formatters";
 
 // Re-export property utilities
-// Avoid exporting functions that are also in calculationEngine
+// Only export the getAppreciationRate to avoid conflicts with calculationEngine
 export { 
   getAppreciationRate 
 } from "./propertyUtils";
 
-// Re-export mortgage utilities
-// These are specifically from mortgageUtils
-// but avoid exporting functions that are also in calculationEngine
-// (empty export since all functions clash with calculationEngine)
-
-// Re-export investment utilities
-// These are specifically from investmentUtils
-// but avoid exporting functions that are also in calculationEngine
-// (empty export since all functions clash with calculationEngine)
-
-// Export the calculation engine with all the main calculation functions
+// Export all calculationEngine functions
+// These are the primary implementations we'll use
 export * from "./calculationEngine";
+
+// We don't re-export functions from mortgageUtils or investmentUtils
+// that would conflict with calculationEngine exports

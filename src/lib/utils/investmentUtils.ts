@@ -5,6 +5,18 @@
 export const calculateInvestmentReturnForMonth = (
   initialAmount: number,
   monthlyContribution: number,
+  annualReturnRate: number
+): number => {
+  const monthlyRate = Math.pow(1 + annualReturnRate / 100, 1 / 12) - 1;
+  
+  // First add the contribution, then apply growth
+  return (initialAmount + monthlyContribution) * (1 + monthlyRate);
+};
+
+// Calculate investment return for multiple months
+export const calculateInvestmentReturnForPeriod = (
+  initialAmount: number,
+  monthlyContribution: number,
   annualReturnRate: number,
   months: number
 ): number => {
@@ -27,6 +39,15 @@ export const calculateCapitalGainsTax = (
   currentValue: number,
   taxRate: number
 ): number => {
-  const gain = currentValue - initialInvestment;
-  return Math.max(0, gain * (taxRate / 100));
+  const gain = Math.max(0, currentValue - initialInvestment);
+  return gain * (taxRate / 100);
+};
+
+// Calculate investment earnings (returns only, not including contributions)
+export const calculateInvestmentEarnings = (
+  previousValue: number,
+  currentValue: number,
+  contributionAmount: number
+): number => {
+  return Math.max(0, currentValue - (previousValue + contributionAmount));
 };
