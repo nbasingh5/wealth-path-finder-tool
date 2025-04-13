@@ -5,8 +5,8 @@ import {
   ComparisonResults, 
   FormData, 
   YearlyBuyingResult, 
-  YearlyComparison, 
-  YearlyRentingResult,
+  YearlyRentingResult, 
+  YearlyComparison,
   MonthlyBuyingDataPoint,
   MonthlyRentingDataPoint
 } from "../types";
@@ -182,6 +182,12 @@ export const calculateComparison = (formData: FormData): ComparisonResults => {
   let buyingTotalContributions = 0;
   let rentingTotalContributions = 0;
 
+  // Initialize monthly data arrays for each year
+  for (let year = 0; year <= timeHorizonYears; year++) {
+    monthlyBuyingData[year] = [];
+    monthlyRentingData[year] = [];
+  }
+
   // Create Year 0 state (Initial state before any payments)
   // This represents the starting point
   buyingResults.push({
@@ -253,17 +259,12 @@ export const calculateComparison = (formData: FormData): ComparisonResults => {
     // Calculate month within the current year (1-12)
     const monthInYear = ((currentMonth - 1) % 12) + 1;
     
-    // Initialize monthly data arrays if it's the first month of a year
-    if (monthInYear === 1) {
-      monthlyBuyingData[currentYear] = [];
-      monthlyRentingData[currentYear] = [];
-      
-      // Add yearly trackers if we're starting a new year
-      if (currentYear > 1) {
+    // Add yearly trackers if we're starting a new year
+    if (monthInYear === 1 && currentYear > 0) {
+      // Make sure we have entries for each year
+      if (buyingResults.length <= currentYear) {
         const previousYearBuying = buyingResults[currentYear - 1];
-        const previousYearRenting = rentingResults[currentYear - 1];
         
-        // Add new year entries with previous year's end values
         buyingResults.push({
           year: currentYear,
           mortgagePayment: 0,
@@ -283,6 +284,10 @@ export const calculateComparison = (formData: FormData): ComparisonResults => {
           additionalContributions: buyingTotalContributions,
           monthlyData: []
         });
+      }
+      
+      if (rentingResults.length <= currentYear) {
+        const previousYearRenting = rentingResults[currentYear - 1];
         
         rentingResults.push({
           year: currentYear,
@@ -300,7 +305,9 @@ export const calculateComparison = (formData: FormData): ComparisonResults => {
           additionalContributions: rentingTotalContributions,
           monthlyData: []
         });
-        
+      }
+      
+      if (yearlyComparisons.length <= currentYear) {
         yearlyComparisons.push({
           year: currentYear,
           buyingWealth: (currentHomeValue - loanBalance) + buyingInvestmentValue,
@@ -408,43 +415,53 @@ export const calculateComparison = (formData: FormData): ComparisonResults => {
     });
     
     // Update current year results with monthly data
-    buyingResults[currentYear].monthlyData = monthlyBuyingData[currentYear];
-    rentingResults[currentYear].monthlyData = monthlyRentingData[currentYear];
+    if (buyingResults[currentYear]) {
+      buyingResults[currentYear].monthlyData = monthlyBuyingData[currentYear];
+      
+      // Update yearly tracking totals
+      buyingResults[currentYear].mortgagePayment += (principalPayment + interestPayment);
+      buyingResults[currentYear].principalPaid += principalPayment;
+      buyingResults[currentYear].interestPaid += interestPayment;
+      buyingResults[currentYear].propertyTaxes += monthlyPropertyTaxes;
+      buyingResults[currentYear].homeInsurance += monthlyHomeInsurance;
+      buyingResults[currentYear].maintenanceCosts += monthlyMaintenanceCosts;
+      buyingResults[currentYear].leftoverIncome += buyingLeftoverMonthlyIncome;
+      
+      // Update wealth totals at the end of each month
+      buyingResults[currentYear].homeValue = currentHomeValue;
+      buyingResults[currentYear].homeEquity = monthlyHomeEquity;
+      buyingResults[currentYear].loanBalance = loanBalance;
+      buyingResults[currentYear].leftoverInvestmentValue = buyingInvestmentValue;
+      buyingResults[currentYear].totalWealth = monthlyHomeEquity + buyingInvestmentValue;
+    }
     
-    // Update yearly tracking totals
-    buyingResults[currentYear].mortgagePayment += (principalPayment + interestPayment);
-    buyingResults[currentYear].principalPaid += principalPayment;
-    buyingResults[currentYear].interestPaid += interestPayment;
-    buyingResults[currentYear].propertyTaxes += monthlyPropertyTaxes;
-    buyingResults[currentYear].homeInsurance += monthlyHomeInsurance;
-    buyingResults[currentYear].maintenanceCosts += monthlyMaintenanceCosts;
-    buyingResults[currentYear].leftoverIncome += buyingLeftoverMonthlyIncome;
-    
-    rentingResults[currentYear].totalRent += currentMonthlyRent;
-    rentingResults[currentYear].leftoverIncome += rentingLeftoverMonthlyIncome;
-    rentingResults[currentYear].monthlySavings = 
-      (rentingResults[currentYear].monthlySavings * (monthInYear - 1) + rentingLeftoverMonthlyIncome) / monthInYear;
-    
-    // Update wealth totals at the end of each month
-    buyingResults[currentYear].homeValue = currentHomeValue;
-    buyingResults[currentYear].homeEquity = monthlyHomeEquity;
-    buyingResults[currentYear].loanBalance = loanBalance;
-    buyingResults[currentYear].leftoverInvestmentValue = buyingInvestmentValue;
-    buyingResults[currentYear].totalWealth = monthlyHomeEquity + buyingInvestmentValue;
-    
-    rentingResults[currentYear].leftoverInvestmentValue = rentingInvestmentValue;
-    rentingResults[currentYear].investmentValueBeforeTax = rentingInvestmentValue;
-    rentingResults[currentYear].investmentValueAfterTax = rentingInvestmentValue;
-    rentingResults[currentYear].totalWealth = rentingInvestmentValue;
+    if (rentingResults[currentYear]) {
+      rentingResults[currentYear].monthlyData = monthlyRentingData[currentYear];
+      
+      rentingResults[currentYear].totalRent += currentMonthlyRent;
+      rentingResults[currentYear].leftoverIncome += rentingLeftoverMonthlyIncome;
+      
+      if (monthlyRentingData[currentYear].length > 0) {
+        rentingResults[currentYear].monthlySavings = 
+          (rentingResults[currentYear].monthlySavings * (monthInYear - 1) + rentingLeftoverMonthlyIncome) / monthInYear;
+      }
+      
+      rentingResults[currentYear].leftoverInvestmentValue = rentingInvestmentValue;
+      rentingResults[currentYear].investmentValueBeforeTax = rentingInvestmentValue;
+      rentingResults[currentYear].investmentValueAfterTax = rentingInvestmentValue;
+      rentingResults[currentYear].totalWealth = rentingInvestmentValue;
+    }
     
     // Update comparison values
-    yearlyComparisons[currentYear].buyingWealth = monthlyHomeEquity + buyingInvestmentValue;
-    yearlyComparisons[currentYear].rentingWealth = rentingInvestmentValue;
-    yearlyComparisons[currentYear].difference = (monthlyHomeEquity + buyingInvestmentValue) - rentingInvestmentValue;
-    yearlyComparisons[currentYear].buyingLeftoverIncome += buyingLeftoverMonthlyIncome;
-    yearlyComparisons[currentYear].rentingLeftoverIncome += rentingLeftoverMonthlyIncome;
-    yearlyComparisons[currentYear].buyingLeftoverInvestmentValue = buyingInvestmentValue;
-    yearlyComparisons[currentYear].rentingLeftoverInvestmentValue = rentingInvestmentValue;
+    if (yearlyComparisons[currentYear]) {
+      yearlyComparisons[currentYear].buyingWealth = monthlyHomeEquity + buyingInvestmentValue;
+      yearlyComparisons[currentYear].rentingWealth = rentingInvestmentValue;
+      yearlyComparisons[currentYear].difference = (monthlyHomeEquity + buyingInvestmentValue) - rentingInvestmentValue;
+      yearlyComparisons[currentYear].buyingLeftoverIncome += buyingLeftoverMonthlyIncome;
+      yearlyComparisons[currentYear].rentingLeftoverIncome += rentingLeftoverMonthlyIncome;
+      yearlyComparisons[currentYear].buyingLeftoverInvestmentValue = buyingInvestmentValue;
+      yearlyComparisons[currentYear].rentingLeftoverInvestmentValue = rentingInvestmentValue;
+    }
     
     // Apply monthly home appreciation
     const monthlyAppreciationRate = Math.pow(1 + appreciationRate, 1/12) - 1;
@@ -478,23 +495,29 @@ export const calculateComparison = (formData: FormData): ComparisonResults => {
   const rentingAfterTaxInvestmentValue = rentingInvestmentValue - rentingCapitalGainsTax;
   
   // Update final year with tax results
-  buyingResults[finalYear].leftoverInvestmentValue = buyingAfterTaxInvestmentValue;
-  buyingResults[finalYear].totalWealth = buyingResults[finalYear].homeEquity + buyingAfterTaxInvestmentValue;
-  buyingResults[finalYear].additionalContributions = buyingTotalContributions;
+  if (buyingResults[finalYear]) {
+    buyingResults[finalYear].leftoverInvestmentValue = buyingAfterTaxInvestmentValue;
+    buyingResults[finalYear].totalWealth = buyingResults[finalYear].homeEquity + buyingAfterTaxInvestmentValue;
+    buyingResults[finalYear].additionalContributions = buyingTotalContributions;
+  }
   
-  rentingResults[finalYear].capitalGainsTaxPaid = rentingCapitalGainsTax;
-  rentingResults[finalYear].investmentValueAfterTax = rentingAfterTaxInvestmentValue;
-  rentingResults[finalYear].totalWealth = rentingAfterTaxInvestmentValue;
-  rentingResults[finalYear].additionalContributions = rentingTotalContributions;
+  if (rentingResults[finalYear]) {
+    rentingResults[finalYear].capitalGainsTaxPaid = rentingCapitalGainsTax;
+    rentingResults[finalYear].investmentValueAfterTax = rentingAfterTaxInvestmentValue;
+    rentingResults[finalYear].totalWealth = rentingAfterTaxInvestmentValue;
+    rentingResults[finalYear].additionalContributions = rentingTotalContributions;
+  }
   
   // Update final comparison
-  yearlyComparisons[finalYear].buyingWealth = buyingResults[finalYear].totalWealth;
-  yearlyComparisons[finalYear].rentingWealth = rentingResults[finalYear].totalWealth;
-  yearlyComparisons[finalYear].difference = buyingResults[finalYear].totalWealth - rentingResults[finalYear].totalWealth;
+  if (yearlyComparisons[finalYear]) {
+    yearlyComparisons[finalYear].buyingWealth = buyingResults[finalYear].totalWealth;
+    yearlyComparisons[finalYear].rentingWealth = rentingResults[finalYear].totalWealth;
+    yearlyComparisons[finalYear].difference = buyingResults[finalYear].totalWealth - rentingResults[finalYear].totalWealth;
+  }
   
   // Determine better option with threshold
-  const finalBuyingWealth = buyingResults[finalYear].totalWealth;
-  const finalRentingWealth = rentingResults[finalYear].totalWealth;
+  const finalBuyingWealth = buyingResults[finalYear]?.totalWealth || 0;
+  const finalRentingWealth = rentingResults[finalYear]?.totalWealth || 0;
   const difference = finalBuyingWealth - finalRentingWealth;
   
   // Use a percentage-based threshold for large numbers (1% of higher value)
