@@ -55,6 +55,13 @@ const MonthlyBreakdownTable = ({ year, columns, rowData }: MonthlyBreakdownTable
       case 'monthlySavings':
         return "Amount available for investment this month.";
       
+      case 'totalRent':
+      case 'rent':
+        return "Monthly rent payment.";
+        
+      case 'rentersInsurance':
+        return "Monthly renter's insurance payment.";
+      
       case 'amountInvested':
         return "Cumulative contributions to investments.";
       

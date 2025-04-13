@@ -162,11 +162,20 @@ const ComparisonTable = ({ results }: ComparisonTableProps) => {
       // For subsequent years, calculate earnings as the difference between investment value
       // and (previous investment value + new contributions)
       const prevYear = rentingResults[index - 1];
-      const previousInvestmentValue = prevYear.investmentValueBeforeTax || prevYear.leftoverInvestmentValue || 0;
+      
+      // Ensure we use consistent values for comparison to avoid negative returns
+      const previousInvestmentValue = prevYear.investmentValueBeforeTax || 
+                                     prevYear.investmentValueAfterTax || 
+                                     prevYear.leftoverInvestmentValue || 0;
+                                     
       const contributionsThisYear = year.leftoverIncome || 0;
       
-      // Earnings = current value before tax - (previous value + new contributions)
-      const currentValue = year.investmentValueBeforeTax || year.leftoverInvestmentValue || 0;
+      // Ensure we get the current investment value from the appropriate field
+      const currentValue = year.investmentValueBeforeTax || 
+                          year.leftoverInvestmentValue || 0;
+                          
+      // Calculate earnings only if the current value is at least equal to previous + contributions
+      // to avoid showing negative earnings when they don't make sense
       investmentEarnings = calculateInvestmentEarnings(
         previousInvestmentValue,
         currentValue,
@@ -175,16 +184,26 @@ const ComparisonTable = ({ results }: ComparisonTableProps) => {
     }
     
     // Make sure amountInvested is always at least the value of the initial investment
-    const amountInvested = year.initialInvestment || 0;
+    // and add any leftover income as additional investments
+    const amountInvested = (year.initialInvestment || 0) + 
+                          (index === 0 ? 0 : year.additionalContributions || 0);
     
     // Ensure all investment fields have values
+    const investmentValueBeforeTax = year.investmentValueBeforeTax || year.leftoverInvestmentValue || 0;
+    const capitalGainsTaxPaid = year.capitalGainsTaxPaid || 0;
+    const investmentValueAfterTax = year.investmentValueAfterTax || 
+                                  (investmentValueBeforeTax - capitalGainsTaxPaid) || 
+                                  year.leftoverInvestmentValue || 0;
+    const totalWealth = year.totalWealth || investmentValueAfterTax || 0;
+    
     return {
       ...year,
       amountInvested,
       investmentEarnings,
-      investmentValueBeforeTax: year.investmentValueBeforeTax || year.leftoverInvestmentValue || 0,
-      investmentValueAfterTax: year.investmentValueAfterTax || year.leftoverInvestmentValue || 0,
-      capitalGainsTaxPaid: year.capitalGainsTaxPaid || 0
+      investmentValueBeforeTax,
+      capitalGainsTaxPaid,
+      investmentValueAfterTax,
+      totalWealth
     };
   });
 

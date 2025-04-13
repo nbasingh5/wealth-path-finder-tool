@@ -44,6 +44,7 @@ export const calculateCapitalGainsTax = (
 };
 
 // Calculate investment earnings (returns only, not including contributions)
+// This ensures we never return negative values which wouldn't make sense for earnings
 export const calculateInvestmentEarnings = (
   previousValue: number,
   currentValue: number,
