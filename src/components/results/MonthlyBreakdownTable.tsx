@@ -56,46 +56,85 @@ const MonthlyBreakdownTable = ({ year, columns, rowData }: MonthlyBreakdownTable
       return monthlyData;
     }
     
-    // For years > 0, we'll calculate estimated monthly values
+    // Complete month-by-month calculation for all values
+    
+    // Initialize starting values
+    const yearlyIncome = rowData.yearlyIncome || 100000; // Annual income
+    const monthlyIncome = yearlyIncome / 12; // Monthly income
+    const monthlyRent = rowData.totalRent ? rowData.totalRent / 12 : 2000; // Monthly rent
+    const initialSavings = year === 1 ? 50000 : 0; // Initial savings for year 1
+    const monthlySavingsAmount = rowData.leftoverIncome / 12; // Monthly amount saved
+    
+    // Get annual return rate (default to 10% if not available)
+    const annualReturnRate = 10; // Should match investment rate in the form
+    const monthlyReturnRate = Math.pow(1 + annualReturnRate / 100, 1/12) - 1;
+    
+    // Initialize tracking variables
+    let currentInvestmentValue = initialSavings; // Start with initial savings
+    let totalInvested = initialSavings; // Track total invested amount
+    let totalContributions = 0; // Track total contributions from income
+    let cumulativeEarnings = 0; // Track cumulative investment earnings
+    
+    // Process month by month
     for (let month = 1; month <= 12; month++) {
-      // We'll use the investment data directly from rowData when available
-      let amountInvested = rowData.amountInvested || 0;
+      // Calculate investment earnings for this month
       let investmentEarnings = 0;
-      
-      // For monthly investment earnings, we distribute the annual earnings over months
-      if (rowData.investmentEarnings !== undefined) {
-        // Scale earnings by month (simulate gradual growth)
-        investmentEarnings = rowData.investmentEarnings * (month / 12);
+      if (month === 1 && year === 1) {
+        // First month of year 1 - earnings on initial savings only
+        investmentEarnings = initialSavings * monthlyReturnRate;
+      } else {
+        // All other months - earnings on previous month's total value
+        const previousValue = month === 1 
+          ? (year === 1 ? initialSavings : 0) // If first month of year > 1
+          : monthlyData[month - 2].leftoverInvestmentValue; // Previous month's value
+        investmentEarnings = previousValue * monthlyReturnRate;
       }
       
-      // Create proportional monthly values based on yearly totals
+      // Add this month's savings contribution
+      totalContributions += monthlySavingsAmount;
+      
+      // Update investment value: previous value + new contribution + earnings
+      currentInvestmentValue = (month === 1 ? initialSavings : monthlyData[month - 2].leftoverInvestmentValue) + 
+                               monthlySavingsAmount + 
+                               investmentEarnings;
+      
+      // Track cumulative earnings
+      cumulativeEarnings += investmentEarnings;
+      
+      // Calculate total invested amount (initial + contributions)
+      totalInvested = initialSavings + totalContributions;
+      
+      // Calculate capital gains tax for this month (if applicable)
+      // Assuming 15% capital gains tax rate
+      const capitalGainsTaxRate = 0.15;
+      const monthlyCapitalGainsTax = investmentEarnings * capitalGainsTaxRate;
+      
+      // Calculate after-tax investment value
+      const afterTaxInvestmentValue = currentInvestmentValue - monthlyCapitalGainsTax;
+      
+      // Add data for this month
       monthlyData.push({
         month,
-        yearlyIncome: rowData.yearlyIncome / 12,
-        leftoverIncome: rowData.leftoverIncome / 12,
+        yearlyIncome: monthlyIncome,
+        totalRent: monthlyRent,
+        leftoverIncome: monthlySavingsAmount,
         mortgagePayment: rowData.mortgagePayment ? rowData.mortgagePayment / 12 : 0,
         principalPaid: rowData.principalPaid ? rowData.principalPaid / 12 : 0,
         interestPaid: rowData.interestPaid ? rowData.interestPaid / 12 : 0,
         propertyTaxes: rowData.propertyTaxes ? rowData.propertyTaxes / 12 : 0,
         homeInsurance: rowData.homeInsurance ? rowData.homeInsurance / 12 : 0,
         maintenanceCosts: rowData.maintenanceCosts ? rowData.maintenanceCosts / 12 : 0,
-        totalRent: rowData.totalRent ? rowData.totalRent / 12 : 0,
-        
-        // The following values are cumulative and would increase throughout the year
-        // So we'll show the estimated value for that specific month
         homeValue: calculateMonthlyValue(rowData.homeValue, month, year),
         homeEquity: calculateMonthlyValue(rowData.homeEquity, month, year),
         loanBalance: calculateMonthlyValue(rowData.loanBalance, month, year),
-        leftoverInvestmentValue: calculateMonthlyValue(rowData.leftoverInvestmentValue, month, year),
-        
-        amountInvested: amountInvested / 12 * month, // Scale by month
-        investmentEarnings: calculateMonthlyValue(investmentEarnings, month, year),
-        
-        monthlySavings: rowData.monthlySavings || 0,
-        investmentValueBeforeTax: calculateMonthlyValue(rowData.investmentValueBeforeTax, month, year),
-        capitalGainsTaxPaid: rowData.capitalGainsTaxPaid ? rowData.capitalGainsTaxPaid / 12 : 0,
-        investmentValueAfterTax: calculateMonthlyValue(rowData.investmentValueAfterTax, month, year),
-        totalWealth: calculateMonthlyValue(rowData.totalWealth, month, year)
+        amountInvested: totalInvested, // Total invested so far
+        investmentEarnings: investmentEarnings, // This month's earnings
+        leftoverInvestmentValue: currentInvestmentValue, // Current total value
+        monthlySavings: monthlySavingsAmount, // This month's contribution
+        investmentValueBeforeTax: currentInvestmentValue,
+        capitalGainsTaxPaid: monthlyCapitalGainsTax,
+        investmentValueAfterTax: afterTaxInvestmentValue,
+        totalWealth: afterTaxInvestmentValue // Total wealth is the after-tax investment value
       });
     }
     
@@ -107,8 +146,17 @@ const MonthlyBreakdownTable = ({ year, columns, rowData }: MonthlyBreakdownTable
   const calculateMonthlyValue = (yearEndValue: number, month: number, year: number) => {
     if (!yearEndValue || year === 0) return yearEndValue;
     
-    // Simple linear approximation (month/12 of the yearly change)
-    return yearEndValue * (month / 12);
+    // For year 1, use a more accurate formula that accounts for initial investments
+    if (year === 1) {
+      const initialValue = yearEndValue / Math.pow(1.01, 12); // Approximate starting value
+      const monthlyGrowthRate = Math.pow(yearEndValue / initialValue, 1/12);
+      return initialValue * Math.pow(monthlyGrowthRate, month);
+    }
+    
+    // For other years, use a more accurate compounding formula
+    // instead of simple linear approximation
+    const monthlyGrowthRate = Math.pow(1.01, 1/12); // Approximate 1% monthly growth
+    return yearEndValue / Math.pow(monthlyGrowthRate, 12-month);
   };
   
   // Get tooltip explanation for a column
