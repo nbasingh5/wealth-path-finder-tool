@@ -69,11 +69,14 @@ const MonthlyBreakdownTable = ({ year, columns, rowData }: MonthlyBreakdownTable
     const annualReturnRate = 10; // Should match investment rate in the form
     const monthlyReturnRate = Math.pow(1 + annualReturnRate / 100, 1/12) - 1;
     
+    // Calculate capital gains tax rate
+    const capitalGainsTaxRate = 0.15; // 15% tax rate
+    
     // Initialize tracking variables
     let currentInvestmentValue = initialSavings; // Start with initial savings
     let totalInvested = initialSavings; // Track total invested amount
     let totalContributions = 0; // Track total contributions from income
-    let cumulativeEarnings = 0; // Track cumulative investment earnings
+    let yearlyInvestmentEarnings = 0; // Track yearly investment earnings for tax calculation
     
     // Process month by month
     for (let month = 1; month <= 12; month++) {
@@ -98,19 +101,32 @@ const MonthlyBreakdownTable = ({ year, columns, rowData }: MonthlyBreakdownTable
                                monthlySavingsAmount + 
                                investmentEarnings;
       
-      // Track cumulative earnings
-      cumulativeEarnings += investmentEarnings;
+      // Track yearly investment earnings for tax calculation
+      yearlyInvestmentEarnings += investmentEarnings;
       
       // Calculate total invested amount (initial + contributions)
       totalInvested = initialSavings + totalContributions;
       
-      // Calculate capital gains tax for this month (if applicable)
-      // Assuming 15% capital gains tax rate
-      const capitalGainsTaxRate = 0.15;
-      const monthlyCapitalGainsTax = investmentEarnings * capitalGainsTaxRate;
+        // Calculate capital gains tax - only in month 12
+        let capitalGainsTaxPaid = 0;
+        
+        // Only apply capital gains tax in month 12 (end of year)
+        if (month === 12) {
+          // Calculate the full year's tax
+          capitalGainsTaxPaid = yearlyInvestmentEarnings * capitalGainsTaxRate;
+        } else {
+          // For months 1-11, no tax is applied or displayed
+          capitalGainsTaxPaid = 0;
+        }
+        
+        // Calculate after-tax investment value
+        // Only subtract tax in month 12
+        const afterTaxInvestmentValue = month === 12 
+          ? currentInvestmentValue - capitalGainsTaxPaid 
+          : currentInvestmentValue;
       
-      // Calculate after-tax investment value
-      const afterTaxInvestmentValue = currentInvestmentValue - monthlyCapitalGainsTax;
+      // Update total wealth accordingly
+      const totalWealth = afterTaxInvestmentValue;
       
       // Add data for this month
       monthlyData.push({
@@ -129,12 +145,12 @@ const MonthlyBreakdownTable = ({ year, columns, rowData }: MonthlyBreakdownTable
         loanBalance: calculateMonthlyValue(rowData.loanBalance, month, year),
         amountInvested: totalInvested, // Total invested so far
         investmentEarnings: investmentEarnings, // This month's earnings
-        leftoverInvestmentValue: currentInvestmentValue, // Current total value
+        leftoverInvestmentValue: currentInvestmentValue, // Current total value before tax
         monthlySavings: monthlySavingsAmount, // This month's contribution
         investmentValueBeforeTax: currentInvestmentValue,
-        capitalGainsTaxPaid: monthlyCapitalGainsTax,
+        capitalGainsTaxPaid: capitalGainsTaxPaid,
         investmentValueAfterTax: afterTaxInvestmentValue,
-        totalWealth: afterTaxInvestmentValue // Total wealth is the after-tax investment value
+        totalWealth: totalWealth
       });
     }
     
@@ -211,7 +227,7 @@ const MonthlyBreakdownTable = ({ year, columns, rowData }: MonthlyBreakdownTable
         return "Value of investments before capital gains tax.";
       
       case 'capitalGainsTaxPaid':
-        return "Estimated capital gains tax for this month.";
+        return "Capital gains tax paid. This is only applied at the end of the year (month 12).";
       
       case 'investmentValueAfterTax':
         return "Investment value after capital gains tax.";
@@ -241,10 +257,10 @@ const MonthlyBreakdownTable = ({ year, columns, rowData }: MonthlyBreakdownTable
           </TableHeader>
           <TableBody>
             {monthlyData.map((monthData) => (
-              <TableRow key={monthData.month}>
+              <TableRow key={monthData.month} className={monthData.month === 12 ? "bg-muted/20" : ""}>
                 <TableCell>{monthData.month}</TableCell>
                 {columns.slice(1).map(col => (
-                  <TableCell key={col.key}>
+                  <TableCell key={col.key} className={col.key === 'capitalGainsTaxPaid' && monthData.month === 12 ? "font-medium" : ""}>
                     <TooltipProvider>
                       <Tooltip delayDuration={300}>
                         <TooltipTrigger asChild>
@@ -257,7 +273,7 @@ const MonthlyBreakdownTable = ({ year, columns, rowData }: MonthlyBreakdownTable
                         </TooltipTrigger>
                         <TooltipContent side="top" className="max-w-xs text-xs">
                           {getTooltipContent(col.key)}
-                          </TooltipContent>
+                        </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
                   </TableCell>
