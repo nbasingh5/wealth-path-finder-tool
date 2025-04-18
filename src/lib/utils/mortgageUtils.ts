@@ -1,5 +1,4 @@
-
-// Mortgage related calculations
+// src/lib/utils/mortgageUtils.ts
 
 // Calculate monthly mortgage payment
 export const calculateMonthlyMortgagePayment = (
@@ -31,34 +30,50 @@ export const calculateMortgageAmortizationForMonth = (
 } => {
   const monthlyInterestRate = interestRate / (12 * 100);
   const numberOfPayments = loanTermYears * 12;
+  
+  if (monthNumber > numberOfPayments) {
+    return {
+      principalPayment: 0,
+      interestPayment: 0,
+      remainingBalance: 0
+    };
+  }
+  
   const monthlyPayment = calculateMonthlyMortgagePayment(
     loanAmount,
     interestRate,
     loanTermYears
   );
-  
-  let balance = loanAmount;
-  
-  // Calculate to the current month
-  for (let i = 1; i <= monthNumber; i++) {
-    const interestPayment = balance * monthlyInterestRate;
-    const principalPayment = monthlyPayment - interestPayment;
-    
-    balance -= principalPayment;
-    
-    if (i === monthNumber) {
-      return {
-        principalPayment,
-        interestPayment,
-        remainingBalance: Math.max(0, balance), // No negative balances
-      };
-    }
+
+  // Special case for 0% interest
+  if (monthlyInterestRate === 0) {
+    const principalPayment = loanAmount / numberOfPayments;
+    const remainingBalance = loanAmount - (principalPayment * (monthNumber - 1));
+    return {
+      principalPayment,
+      interestPayment: 0,
+      remainingBalance: Math.max(0, remainingBalance - principalPayment)
+    };
   }
   
-  // Default return if month not reached
+  // Calculate remaining balance before current payment
+  const balanceBeforePayment = loanAmount * 
+    (Math.pow(1 + monthlyInterestRate, numberOfPayments) - 
+     Math.pow(1 + monthlyInterestRate, monthNumber - 1)) / 
+    (Math.pow(1 + monthlyInterestRate, numberOfPayments) - 1);
+    
+  // Calculate interest for current payment
+  const interestPayment = balanceBeforePayment * monthlyInterestRate;
+  
+  // Calculate principal for current payment
+  const principalPayment = monthlyPayment - interestPayment;
+  
+  // Calculate remaining balance after payment
+  const remainingBalance = balanceBeforePayment - principalPayment;
+  
   return {
-    principalPayment: 0,
-    interestPayment: 0,
-    remainingBalance: loanAmount,
+    principalPayment,
+    interestPayment,
+    remainingBalance: Math.max(0, remainingBalance)
   };
 };

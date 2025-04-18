@@ -4,17 +4,27 @@
 // Export the formatters
 export { formatCurrency, formatPercentage } from "./utils/formatters";
 
-// Export the fixed calculation utilities from our new implementation
+// Export the mortgage utilities
 export {
   calculateMonthlyMortgagePayment,
   calculateMortgageAmortizationForMonth,
+} from "./utils/mortgageUtils";
+
+// Export property cost utilities
+export {
   calculateMonthlyPropertyTaxes,
   calculateMonthlyHomeInsurance,
   calculateMonthlyMaintenanceCosts,
+} from "./utils/propertyCostUtils";
+
+// Export investment utilities
+export {
   calculateInvestmentReturnForMonth,
   calculateCapitalGainsTax,
-  calculateComparison
-} from "./utils/calculationEngine";
+} from "./utils/investmentUtils";
 
-// Re-export property utilities for backward compatibility
+// Export the main comparison engine
+export { calculateComparison } from "./utils/calculationEngine";
+
+// Re-export property utilities (like appreciation)
 export { getAppreciationRate } from "./utils/propertyUtils";
