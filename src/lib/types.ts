@@ -1,4 +1,4 @@
-// src/lib/types.ts - Updated with monthly data tracking
+// src/lib/types.ts - Updated with monthly data tracking and investment details
 // Form Input Types
 export interface GeneralInputs {
   timeHorizon: number;
@@ -71,9 +71,6 @@ export interface MonthlyRentingDataPoint {
   monthlySavings: number; // Added field
 }
 
-// For simplicity in the interface, use specific types rather than a union type
-// (removed MonthlyDataPoint union type that was causing the type error)
-
 // Calculation Result Types
 export interface YearlyBuyingResult {
   year: number;
@@ -88,27 +85,30 @@ export interface YearlyBuyingResult {
   homeEquity: number;
   totalWealth: number;
   yearlyIncome: number;
-  leftoverIncome: number;
-  leftoverInvestmentValue: number;
+  leftoverIncome: number;        // Total leftover income during the year
+  amountInvested: number;         // Total amount put into investments (initial + contributions)
+  investmentEarnings: number;     // Earnings from investments during the year (after-tax)
+  leftoverInvestmentValue: number; // End-of-year investment value (after-tax)
   initialInvestment?: number; // Added to show initial investment
-  additionalContributions?: number; // Added to show new contributions
+  additionalContributions?: number; // Cumulative additional contributions up to this year
   monthlyData?: MonthlyBuyingDataPoint[]; // Optional for backward compatibility
 }
 
 export interface YearlyRentingResult {
   year: number;
   totalRent: number;
-  monthlySavings: number;
-  amountInvested: number;
+  monthlySavings: number; // Average monthly savings during the year
+  amountInvested: number; // Total amount put into investments (initial + contributions)
   investmentValueBeforeTax: number;
   capitalGainsTaxPaid: number;
-  investmentValueAfterTax: number;
+  investmentEarnings: number;     // Earnings from investments during the year (after-tax)
+  investmentValueAfterTax: number; // End-of-year investment value (after-tax)
   totalWealth: number;
   yearlyIncome: number;
-  leftoverIncome: number;
-  leftoverInvestmentValue: number;
+  leftoverIncome: number;        // Total leftover income during the year
+  leftoverInvestmentValue: number; // Same as investmentValueAfterTax for consistency
   initialInvestment?: number; // Added to show initial investment
-  additionalContributions?: number; // Added to show new contributions
+  additionalContributions?: number; // Cumulative additional contributions up to this year
   monthlyData?: MonthlyRentingDataPoint[]; // Optional for backward compatibility
 }
 

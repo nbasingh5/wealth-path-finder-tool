@@ -96,10 +96,11 @@ export const calculateBuyingYearlyData = ({
     leftoverInvestmentValue: buyingInvestmentValue,
     initialInvestment: buyingInitialInvestment,
     additionalContributions: 0,
+    amountInvested: buyingInitialInvestment, // Initial investment
+    investmentEarnings: 0,
     monthlyData: monthlyBuyingData[0],
   });
   // --- End Year 0 Setup ---
-
 
   // Calculate for each year
   for (let year = 1; year <= timeHorizonYears; year++) {
@@ -112,6 +113,10 @@ export const calculateBuyingYearlyData = ({
     let yearlyMaintenanceCosts = 0;
     let yearlyBuyingLeftoverIncome = 0;
     let monthlyBuyingSavings: number[] = [];
+
+    // Determine amount invested from the previous year
+    const previousYear = buyingResults[year - 1];
+    const amountInvested = previousYear.totalWealth + yearlyBuyingLeftoverIncome;
 
     for (let month = 1; month <= 12; month++) {
       const globalMonthNumber = (year - 1) * 12 + month;
@@ -206,6 +211,7 @@ export const calculateBuyingYearlyData = ({
 
     const buyingInvestmentValueAfterTax = buyingInvestmentValue - buyingCapitalGainsTax;
     const totalBuyingWealthAfterTax = homeEquity + buyingInvestmentValueAfterTax;
+    const investmentEarnings = buyingInvestmentValueAfterTax - amountInvested
 
     buyingResults.push({
       year,
@@ -224,6 +230,8 @@ export const calculateBuyingYearlyData = ({
       leftoverInvestmentValue: buyingInvestmentValueAfterTax,
       initialInvestment: buyingInitialInvestment,
       additionalContributions: buyingTotalContributions,
+      amountInvested: amountInvested,
+      investmentEarnings: investmentEarnings,
       monthlyData: monthlyBuyingData[year],
     });
 
@@ -231,7 +239,6 @@ export const calculateBuyingYearlyData = ({
     if (general.incomeIncrease) {
       currentYearlyIncome *= 1 + general.annualIncomeGrowthRate / 100;
     }
-
   } // End yearly loop
 
   const finalResult = buyingResults[buyingResults.length - 1];
@@ -242,4 +249,3 @@ export const calculateBuyingYearlyData = ({
       finalHomeEquity: finalResult.homeEquity
   };
 };
-

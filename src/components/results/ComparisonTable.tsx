@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { useState } from "react";
 import ComparisonTableTab from "./ComparisonTableTab";
+import { ReactNode } from "react";
 
 interface ComparisonTableProps {
   results: ComparisonResults | null;
@@ -10,7 +11,7 @@ interface ComparisonTableProps {
 
 const ComparisonTable = ({ results }: ComparisonTableProps) => {
   const [expandedRows, setExpandedRows] = useState<Record<string, boolean>>({});
-  
+
   if (!results) return null;
 
   // Defensive check for data integrity
@@ -50,7 +51,6 @@ const ComparisonTable = ({ results }: ComparisonTableProps) => {
     { key: "betterOption", label: "Better Option" }
   ];
 
-  // Updated buying columns with investment earnings instead of initial/additional investments
   const buyingColumns = [
     { key: "year", label: "Year" },
     { key: "yearlyIncome", label: "Annual Income" },
@@ -70,7 +70,6 @@ const ComparisonTable = ({ results }: ComparisonTableProps) => {
     { key: "totalWealth", label: "Total Wealth" }
   ];
 
-  // Updated renting columns with investment earnings
   const rentingColumns = [
     { key: "year", label: "Year" },
     { key: "yearlyIncome", label: "Annual Income" },
@@ -85,10 +84,10 @@ const ComparisonTable = ({ results }: ComparisonTableProps) => {
     { key: "totalWealth", label: "Total Wealth" }
   ];
 
-  // Add investment earnings calculations to the data
+  //  Enhance yearly comparisons with better option
   const enhancedYearlyComparisons = yearlyComparisons.map(year => {
-    let betterOption: React.ReactNode;
-    
+    let betterOption: ReactNode;
+
     if (year.difference > 0) {
       betterOption = (
         <span className="px-2 py-1 rounded-full text-xs font-medium bg-buy/10 text-buy-dark">
@@ -108,60 +107,10 @@ const ComparisonTable = ({ results }: ComparisonTableProps) => {
         </span>
       );
     }
-    
+
     return {
       ...year,
       betterOption
-    };
-  });
-
-  // Process buying data to add investment earnings
-  const enhancedBuyingResults = buyingResults.map((year, index) => {
-    // Calculate amount invested
-    let amountInvested = 0;
-    
-    if (index === 0) {
-      // For Year 0, use initial investment
-      amountInvested = year.initialInvestment || 0;
-    } else {
-      // For Year 1+, use previous year's total wealth + current year's leftover income
-      const prevYear = buyingResults[index - 1];
-      amountInvested = prevYear.totalWealth + year.leftoverIncome;
-    }
-    
-    // Calculate investment earnings (difference between total investment value and amount invested)
-    const investmentEarnings = year.leftoverInvestmentValue - 
-      (index === 0 ? amountInvested : (year.leftoverIncome || 0));
-    
-    return {
-      ...year,
-      amountInvested,
-      investmentEarnings: Math.max(0, investmentEarnings) // Ensure we don't show negative earnings
-    };
-  });
-  
-  // Process renting data to add investment earnings
-  const enhancedRentingResults = rentingResults.map((year, index) => {
-    // Calculate amount invested
-    let amountInvested = 0;
-    
-    if (index === 0) {
-      // For Year 0, use initial investment
-      amountInvested = year.initialInvestment || 0;
-    } else {
-      // For Year 1+, use previous year's total wealth + current year's leftover income
-      const prevYear = rentingResults[index - 1];
-      amountInvested = prevYear.totalWealth + year.leftoverIncome;
-    }
-    
-    // Calculate investment earnings
-    const investmentEarnings = year.investmentValueAfterTax - 
-      (index === 0 ? amountInvested : (year.leftoverIncome || 0));
-    
-    return {
-      ...year,
-      amountInvested,
-      investmentEarnings: Math.max(0, investmentEarnings) // Ensure we don't show negative earnings
     };
   });
 
@@ -177,7 +126,7 @@ const ComparisonTable = ({ results }: ComparisonTableProps) => {
             <TabsTrigger value="buying">Buying Details</TabsTrigger>
             <TabsTrigger value="renting">Renting Details</TabsTrigger>
           </TabsList>
-          
+
           <TabsContent value="summary">
             <ComparisonTableTab
               data={enhancedYearlyComparisons}
@@ -187,20 +136,20 @@ const ComparisonTable = ({ results }: ComparisonTableProps) => {
               onToggleRow={toggleRow}
             />
           </TabsContent>
-          
+
           <TabsContent value="buying">
             <ComparisonTableTab
-              data={enhancedBuyingResults}
+              data={buyingResults}
               columns={buyingColumns}
               tabId="buying"
               expandedRows={expandedRows}
               onToggleRow={toggleRow}
             />
           </TabsContent>
-          
+
           <TabsContent value="renting">
             <ComparisonTableTab
-              data={enhancedRentingResults}
+              data={rentingResults}
               columns={rentingColumns}
               tabId="renting"
               expandedRows={expandedRows}
