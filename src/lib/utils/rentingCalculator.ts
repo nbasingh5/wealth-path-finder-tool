@@ -6,7 +6,10 @@ import {
   MonthlyRentingDataPoint,
   YearlyRentingResult,
 } from "../types";
-import { calculateInvestmentReturnForMonth, calculateCapitalGainsTax } from "./investmentUtils";
+import {
+  calculateInvestmentReturnForMonth,
+  calculateCapitalGainsTax,
+} from "./investmentUtils";
 
 interface RentingCalculationInputs {
   general: GeneralInputs;
@@ -25,34 +28,32 @@ export const calculateRentingYearlyData = ({
   investment,
 }: RentingCalculationInputs): RentingCalculationResult => {
   const timeHorizonYears = general.timeHorizon;
-
-  // Initial values
   const rentingResults: YearlyRentingResult[] = [];
   const monthlyRentingData: Record<number, MonthlyRentingDataPoint[]> = {};
-
-  // Initialize tracking variables
-  let monthlyRent = renting.monthlyRent;
-  let rentingInvestmentValue = general.currentSavings; // Start with full savings
-  let rentingInitialInvestment = rentingInvestmentValue;
-  let rentingTotalContributions = 0;
   let currentYearlyIncome = general.annualIncome;
-  let rentingCostBasis = rentingInvestmentValue;
-  let rentingCumulativeTaxesPaid = 0; // Not strictly needed for renting results but helps consistency
-  const monthlyRentersInsurance = 20; // $20/month estimate
+  const monthlyIncome = currentYearlyIncome / 12;
+  let monthlyRent = renting.monthlyRent;
+  let rentingInvestmentValue = general.currentSavings;
+  let basis = general.currentSavings;
+  let rentingTotalContributions = 0;
+  let rentingCumulativeTaxesPaid = 0;
 
-  // --- Year 0 Setup ---
   monthlyRentingData[0] = [];
   for (let month = 1; month <= 12; month++) {
     monthlyRentingData[0].push({
       month,
-      monthlyIncome: currentYearlyIncome / 12,
+      monthlyIncome,
       rent: 0,
-      rentersInsurance: 0,
       leftoverIncome: 0,
-      investmentValue: rentingInvestmentValue,
-      initialInvestment: rentingInitialInvestment,
-      additionalContributions: 0,
       monthlySavings: 0,
+      amountInvested: rentingInvestmentValue,
+      investmentEarnings: 0,
+      investmentValueBeforeTax: rentingInvestmentValue,
+      capitalGainsTax: 0,
+      investmentValueAfterTax: rentingInvestmentValue,
+      totalWealth: rentingInvestmentValue,
+      initialInvestment: general.currentSavings,
+      additionalContributions: 0,
     });
   }
 
@@ -60,112 +61,125 @@ export const calculateRentingYearlyData = ({
     year: 0,
     totalRent: 0,
     monthlySavings: 0,
-    amountInvested: rentingInitialInvestment,
+    amountInvested: general.currentSavings,
     investmentValueBeforeTax: rentingInvestmentValue,
     capitalGainsTaxPaid: 0,
     investmentValueAfterTax: rentingInvestmentValue,
-    totalWealth: rentingInvestmentValue, // Initial wealth
+    totalWealth: rentingInvestmentValue,
     yearlyIncome: currentYearlyIncome,
     leftoverIncome: 0,
     leftoverInvestmentValue: rentingInvestmentValue,
-    initialInvestment: rentingInitialInvestment,
+    initialInvestment: general.currentSavings,
     additionalContributions: 0,
     investmentEarnings: 0,
     monthlyData: monthlyRentingData[0],
+    annualReturnRate: investment.annualReturn,
+    capitalGainsTaxRate: investment.capitalGainsTaxRate,
   });
-  // --- End Year 0 Setup ---
 
-  // Calculate for each year
   for (let year = 1; year <= timeHorizonYears; year++) {
-    monthlyRentingData[year] = [];
+    let totalGains = 0;
+    let contributionsThisYear = 0;
     let yearlyRent = 0;
-    let yearlyRentersInsurance = 0;
-    let yearlyRentingLeftoverIncome = 0;
-    let monthlyRentingSavings: number[] = [];
+    let yearlyLeftoverIncome = 0;
+    let yearlyInvested = 0 
 
-     // Determine amount invested from the previous year
+    monthlyRentingData[year] = [];
+
     const previousYear = rentingResults[year - 1];
-    const amountInvested = previousYear.totalWealth + yearlyRentingLeftoverIncome;
+    const startOfYearBalance = previousYear.investmentValueAfterTax;
+    let previousMonthInvestmentValue = startOfYearBalance;
 
     for (let month = 1; month <= 12; month++) {
-      const monthlyIncome = currentYearlyIncome / 12;
-
       yearlyRent += monthlyRent;
-      yearlyRentersInsurance += monthlyRentersInsurance;
+      const leftover = monthlyIncome - monthlyRent;
+      yearlyLeftoverIncome += leftover;
 
-      const monthlyRentingExpenses = monthlyRent + monthlyRentersInsurance;
-      const rentingLeftoverMonthlyIncome = monthlyIncome - monthlyRentingExpenses;
-
-      monthlyRentingSavings.push(rentingLeftoverMonthlyIncome);
-      yearlyRentingLeftoverIncome += rentingLeftoverMonthlyIncome;
-
-      if (rentingLeftoverMonthlyIncome > 0) {
-        rentingTotalContributions += rentingLeftoverMonthlyIncome;
+      if (leftover > 0) {
+        rentingTotalContributions += leftover;
+        contributionsThisYear += leftover;
+        basis += leftover;
       }
 
-      rentingInvestmentValue = calculateInvestmentReturnForMonth(
-        rentingInvestmentValue,
-        Math.max(0, rentingLeftoverMonthlyIncome),
+      const amountInvested = previousMonthInvestmentValue + leftover;
+      yearlyInvested = amountInvested;
+      const earnings = calculateInvestmentReturnForMonth(
+        amountInvested,
         investment.annualReturn
       );
+      totalGains += earnings;
+
+      const endBeforeTax =
+        previousMonthInvestmentValue + earnings + Math.max(0, leftover);
+      const endAfterTax = endBeforeTax;
 
       monthlyRentingData[year].push({
         month,
         monthlyIncome,
         rent: monthlyRent,
-        rentersInsurance: monthlyRentersInsurance,
-        leftoverIncome: rentingLeftoverMonthlyIncome,
-        investmentValue: rentingInvestmentValue,
-        initialInvestment: rentingInitialInvestment,
+        leftoverIncome: leftover,
+        monthlySavings: leftover,
+        amountInvested: amountInvested,
+        investmentEarnings: earnings,
+        investmentValueBeforeTax: endBeforeTax,
+        capitalGainsTax: 0,
+        investmentValueAfterTax: endAfterTax,
+        totalWealth: endAfterTax,
+        initialInvestment: previousYear.initialInvestment,
         additionalContributions: rentingTotalContributions,
-        monthlySavings: rentingLeftoverMonthlyIncome,
       });
 
-    } // End monthly loop
+      previousMonthInvestmentValue = endAfterTax;
+      rentingInvestmentValue = endBeforeTax;
+    }
 
-    const rentingInvestmentGain = Math.max(0, rentingInvestmentValue - rentingCostBasis);
-    const rentingCapitalGainsTax = calculateCapitalGainsTax(
-        rentingCostBasis, rentingInvestmentValue, investment.capitalGainsTaxRate
-    );
+    const annualTax = 0;
 
-    rentingCumulativeTaxesPaid += rentingCapitalGainsTax; // Track cumulative tax (optional here)
-    rentingCostBasis = rentingInvestmentValue - rentingInvestmentGain + rentingCapitalGainsTax; // Update cost basis for next year
+    rentingCumulativeTaxesPaid += annualTax;
 
-    const rentingInvestmentValueAfterTax = rentingInvestmentValue - rentingCapitalGainsTax;
-    const totalRentingWealthAfterTax = rentingInvestmentValueAfterTax;
-    const avgMonthlyRentingSavings = monthlyRentingSavings.reduce((sum, val) => sum + val, 0) / 12;
-
-    const investmentEarnings = rentingInvestmentValueAfterTax - amountInvested
+    const investmentValueAfterTax = rentingInvestmentValue - annualTax;
+    const avgMonthlySavings = contributionsThisYear / 12;
 
     rentingResults.push({
       year,
       totalRent: yearlyRent,
-      monthlySavings: avgMonthlyRentingSavings,
-      amountInvested: amountInvested, // Reflects only additional contributions during the simulation years
-      investmentValueBeforeTax: rentingInvestmentValue,
-      capitalGainsTaxPaid: rentingCapitalGainsTax,
-      investmentValueAfterTax: rentingInvestmentValueAfterTax,
-      totalWealth: totalRentingWealthAfterTax, // Use wealth after tax
+      monthlySavings: avgMonthlySavings,
+      amountInvested: yearlyInvested,
+      investmentValueBeforeTax: investmentValueAfterTax,
+      capitalGainsTaxPaid: annualTax,
+      investmentValueAfterTax,
+      totalWealth: investmentValueAfterTax,
       yearlyIncome: currentYearlyIncome,
-      leftoverIncome: yearlyRentingLeftoverIncome,
-      leftoverInvestmentValue: rentingInvestmentValueAfterTax,
-      initialInvestment: rentingInitialInvestment,
+      leftoverIncome: yearlyLeftoverIncome,
+      leftoverInvestmentValue: investmentValueAfterTax,
+      initialInvestment: general.currentSavings,
       additionalContributions: rentingTotalContributions,
-      investmentEarnings: investmentEarnings,
+      investmentEarnings: totalGains,
       monthlyData: monthlyRentingData[year],
+      annualReturnRate: investment.annualReturn,
+      capitalGainsTaxRate: investment.capitalGainsTaxRate,
     });
 
-    // Update rent and income for next year
     monthlyRent *= 1 + renting.annualRentIncrease / 100;
     if (general.incomeIncrease) {
       currentYearlyIncome *= 1 + general.annualIncomeGrowthRate / 100;
     }
-  } // End yearly loop
+  }
 
+      const taxOwed = calculateCapitalGainsTax(
+        rentingResults[timeHorizonYears].investmentEarnings,
+      investment.capitalGainsTaxRate
+    );
+  rentingResults[timeHorizonYears].capitalGainsTaxPaid = taxOwed;
+  rentingResults[timeHorizonYears].investmentValueAfterTax = rentingResults[timeHorizonYears].totalWealth - taxOwed
+  rentingResults[timeHorizonYears].totalWealth = rentingResults[timeHorizonYears].investmentValueAfterTax
   const finalResult = rentingResults[rentingResults.length - 1];
+  console.log(rentingResults
 
+  )
   return {
-      rentingResults,
-      finalRentingInvestmentValueAfterTax: finalResult.leftoverInvestmentValue
+    rentingResults,
+    finalRentingInvestmentValueAfterTax:
+      finalResult.leftoverInvestmentValue,
   };
 };

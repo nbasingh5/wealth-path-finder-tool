@@ -63,12 +63,18 @@ export interface MonthlyRentingDataPoint {
   month: number;
   monthlyIncome: number;
   rent: number;
-  rentersInsurance: number;
   leftoverIncome: number;
-  investmentValue: number;
-  initialInvestment: number; // Added field
-  additionalContributions: number; // Added field
-  monthlySavings: number; // Added field
+  monthlySavings: number;
+  // Investment tracking
+  amountInvested: number;
+  investmentEarnings: number;
+  investmentValueBeforeTax: number;
+  capitalGainsTax: number;
+  investmentValueAfterTax: number;
+  totalWealth: number;
+  // Legacy fields (keeping for compatibility)
+  initialInvestment: number;
+  additionalContributions: number;
 }
 
 // Calculation Result Types
@@ -110,6 +116,8 @@ export interface YearlyRentingResult {
   initialInvestment?: number; // Added to show initial investment
   additionalContributions?: number; // Cumulative additional contributions up to this year
   monthlyData?: MonthlyRentingDataPoint[]; // Optional for backward compatibility
+  annualReturnRate: number;
+  capitalGainsTaxRate: number;
 }
 
 export interface YearlyComparison {

@@ -84,6 +84,9 @@ export const calculateComparison = (formData: FormData): ComparisonResults => {
   const validatedFinalRentingWealth = isNaN(finalRentingWealth) ? 0 : finalRentingWealth;
   const validatedDifference = isNaN(difference) ? 0 : Math.abs(difference);
 
+  console.log({buyingResults})
+  console.log({rentingResults})
+
   return {
     yearlyComparisons,
     buyingResults,

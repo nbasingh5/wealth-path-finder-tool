@@ -59,7 +59,7 @@ const ExpandableRow = ({ rowData, isExpanded, onToggle, columns }: ExpandableRow
         return "Annual income minus housing expenses.";
       
       case 'monthlySavings':
-        return "Average monthly amount available for investment.";
+        return "Total monthly amount available for investment.";
       
       case 'amountInvested':
         return year === 0 
@@ -67,7 +67,7 @@ const ExpandableRow = ({ rowData, isExpanded, onToggle, columns }: ExpandableRow
           : "Cumulative amount contributed to investments.";
       
       case 'investmentEarnings':
-        return "Growth from investments this year (excluding new contributions).";
+        return "Total investment returns.";
       
       case 'leftoverInvestmentValue':
         return "Total market value of investments.";
