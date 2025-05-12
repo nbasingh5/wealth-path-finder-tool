@@ -1,4 +1,3 @@
-// src/lib/utils/buyingCalculator.ts
 import {
   BuyingInputs,
   GeneralInputs,
@@ -116,7 +115,7 @@ export const calculateBuyingYearlyData = ({
 
     // Determine amount invested from the previous year
     const previousYear = buyingResults[year - 1];
-    const amountInvested = previousYear.totalWealth + yearlyBuyingLeftoverIncome;
+    const amountInvested = previousYear.leftoverInvestmentValue;
 
     for (let month = 1; month <= 12; month++) {
       const globalMonthNumber = (year - 1) * 12 + month;
@@ -164,14 +163,19 @@ export const calculateBuyingYearlyData = ({
       yearlyBuyingLeftoverIncome += buyingLeftoverMonthlyIncome;
 
       if (buyingLeftoverMonthlyIncome > 0) {
+        // Add monthly contributions to investment
+        buyingInvestmentValue += buyingLeftoverMonthlyIncome;
         buyingTotalContributions += buyingLeftoverMonthlyIncome;
+        // Update cost basis with new contributions
+        buyingCostBasis += buyingLeftoverMonthlyIncome;
       }
 
-      buyingInvestmentValue = calculateInvestmentReturnForMonth(
+      // Calculate monthly investment return and add it to current value
+      const monthlyReturn = calculateInvestmentReturnForMonth(
         buyingInvestmentValue,
-        Math.max(0, buyingLeftoverMonthlyIncome),
         investment.annualReturn
       );
+      buyingInvestmentValue += monthlyReturn;
 
       loanBalance = remainingBalance;
       const monthlyHomeEquity = currentHomeValue - Math.max(0, loanBalance);
@@ -202,16 +206,20 @@ export const calculateBuyingYearlyData = ({
 
     const homeEquity = currentHomeValue - Math.max(0, loanBalance);
     const buyingInvestmentGain = Math.max(0, buyingInvestmentValue - buyingCostBasis);
+    
+    // Calculate capital gains tax only on the gains, not the entire value
     const buyingCapitalGainsTax = calculateCapitalGainsTax(
-        buyingCostBasis, buyingInvestmentValue, investment.capitalGainsTaxRate
+        buyingInvestmentGain, 
+        investment.capitalGainsTaxRate
     );
 
-    buyingCumulativeTaxesPaid += buyingCapitalGainsTax; // Track cumulative tax (optional here)
-    buyingCostBasis = buyingInvestmentValue - buyingInvestmentGain + buyingCapitalGainsTax; // Update cost basis for next year
+    buyingCumulativeTaxesPaid += buyingCapitalGainsTax; // Track cumulative tax
 
     const buyingInvestmentValueAfterTax = buyingInvestmentValue - buyingCapitalGainsTax;
     const totalBuyingWealthAfterTax = homeEquity + buyingInvestmentValueAfterTax;
-    const investmentEarnings = buyingInvestmentValueAfterTax - amountInvested
+    
+    // Calculate investment earnings properly - current value minus starting value minus contributions
+    const investmentEarnings = buyingInvestmentValue - amountInvested - yearlyBuyingLeftoverIncome;
 
     buyingResults.push({
       year,

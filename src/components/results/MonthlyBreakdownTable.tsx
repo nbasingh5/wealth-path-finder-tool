@@ -57,8 +57,6 @@ const MonthlyBreakdownTable = ({ year, columns, rowData }: MonthlyBreakdownTable
       return monthlyData;
     }
     
-    // Complete month-by-month calculation for all values
-    
     // Initialize starting values
     const initialSavings = year === 1 ? rowData.initialInvestment : 0; // Initial savings for year 1
     
@@ -66,59 +64,12 @@ const MonthlyBreakdownTable = ({ year, columns, rowData }: MonthlyBreakdownTable
     const annualReturnRate = rowData.annualReturnRate; // Should match investment rate in the form
     const monthlyReturnRate = Math.pow(1 + annualReturnRate / 100, 1/12) - 1;
     
-    // Calculate capital gains tax rate
-    const capitalGainsTaxRate = rowData.capitalGainsTaxRate;
-    
-    // Initialize tracking variables
-    let currentInvestmentValue = initialSavings; // Start with initial savings
-    let totalContributions = 0; // Track total contributions from income
-    let yearlyInvestmentEarnings = 0; // Track yearly investment earnings for tax calculation
-    
     // Process month by month
     for (let month = 1; month <= 12; month++) {
       const monthlyIncome = rowData.monthlyData[month-1].monthlyIncome; // Monthly income
       const monthlyRent = rowData.monthlyData[month-1].rent; // Monthly rent
       const monthlySavingsAmount = rowData.monthlyData[month-1].monthlySavings; // Monthly amount saved
 
-      totalContributions += monthlySavingsAmount;
-
-      // Calculate investment earnings for this month
-      let investmentEarnings = 0;
-      if (month === 1 && year === 1) {
-        // First month of year 1 - earnings on initial savings only
-        investmentEarnings = initialSavings * monthlyReturnRate;
-      } else {
-        // All other months - earnings on previous month's total value
-        const previousValue = month === 1 
-          ? (year === 1 ? initialSavings : 0) // If first month of year > 1
-          : monthlyData[month - 2].leftoverInvestmentValue; // Previous month's value
-        investmentEarnings = previousValue * monthlyReturnRate;
-      }
-      
-      // Add this month's savings contribution
-      
-      // Update investment value: previous value + new contribution + earnings
-      currentInvestmentValue = (month === 1 ? initialSavings : monthlyData[month - 2].leftoverInvestmentValue) + 
-                               monthlySavingsAmount + 
-                               investmentEarnings;
-      
-      // Track yearly investment earnings for tax calculation
-      yearlyInvestmentEarnings += investmentEarnings;
-      
-      // Calculate total invested amount (initial + contributions)
-      
-        // Calculate capital gains tax - only in month 12
-        const capitalGainsTaxPaid = 0;
-        
-        
-        // Calculate after-tax investment value
-        // Only subtract tax in month 12
-        const afterTaxInvestmentValue = currentInvestmentValue;
-      
-      // Update total wealth accordingly
-      const totalWealth = afterTaxInvestmentValue;
-      
-      // Add data for this month
       monthlyData.push({
         month,
         yearlyIncome: monthlyIncome,
@@ -135,8 +86,8 @@ const MonthlyBreakdownTable = ({ year, columns, rowData }: MonthlyBreakdownTable
         loanBalance: calculateMonthlyValue(rowData.loanBalance, month, year),
         amountInvested: rowData.monthlyData[month-1].amountInvested,
         investmentEarnings: rowData.monthlyData[month-1].investmentEarnings, // This month's earnings
-        leftoverInvestmentValue: currentInvestmentValue, // Current total value before tax
-        monthlySavings: monthlySavingsAmount, // This month's contribution
+        // leftoverInvestmentValue: currentInvestmentValue, 
+        monthlySavings: monthlySavingsAmount,
         investmentValueBeforeTax: rowData.monthlyData[month-1].investmentValueBeforeTax,
         capitalGainsTaxPaid: rowData.monthlyData[month-1].capitalGainsTax,
         investmentValueAfterTax: rowData.monthlyData[month-1].investmentValueAfterTax,
@@ -233,32 +184,32 @@ const MonthlyBreakdownTable = ({ year, columns, rowData }: MonthlyBreakdownTable
   const monthlyData = generateMonthlyData();
 
   return (
-    <div className="py-2">
+    <div className="py-2 w-full">
       <h4 className="text-sm font-medium mb-2">Monthly Breakdown for Year {year}</h4>
-      <div className="overflow-x-auto">
-        <Table className="w-full">
+      <div className="overflow-x-auto w-full max-w-12xl">
+        <Table className="w-full table-auto">
           <TableHeader>
             <TableRow>
-              <TableHead>Month</TableHead>
+              <TableHead className="w-16">Month</TableHead>
               {columns.slice(1).map(col => (
-                <TableHead key={col.key}>{col.label}</TableHead>
+                <TableHead key={col.key} className="whitespace-nowrap px-1 text-xs">{col.label}</TableHead>
               ))}
             </TableRow>
           </TableHeader>
           <TableBody>
             {monthlyData.map((monthData) => (
               <TableRow key={monthData.month} className={monthData.month === 12 ? "bg-muted/20" : ""}>
-                <TableCell>{monthData.month}</TableCell>
+                <TableCell className="whitespace-nowrap px-1 w-16 text-xs">{monthData.month}</TableCell>
                 {columns.slice(1).map(col => (
-                  <TableCell key={col.key} className={col.key === 'capitalGainsTaxPaid' && monthData.month === 12 ? "font-medium" : ""}>
+                  <TableCell key={col.key} className={`whitespace-nowrap px-1 text-xs ${col.key === 'capitalGainsTaxPaid' && monthData.month === 12 ? "font-medium" : ""}`}>
                     <TooltipProvider>
                       <Tooltip delayDuration={300}>
                         <TooltipTrigger asChild>
-                          <div className="flex items-center gap-1">
+                          <div className="flex items-center gap-0.5">
                             {typeof monthData[col.key] === 'number'
                               ? formatCurrency(monthData[col.key])
                               : monthData[col.key] || '-'}
-                            <HelpCircle className="h-3 w-3 text-muted-foreground inline-block hover:text-primary" />
+                            <HelpCircle className="h-2.5 w-2.5 text-muted-foreground inline-block hover:text-primary" />
                           </div>
                         </TooltipTrigger>
                         <TooltipContent side="top" className="max-w-xs text-xs">
