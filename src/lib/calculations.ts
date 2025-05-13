@@ -23,8 +23,12 @@ export {
   calculateCapitalGainsTax,
 } from "./utils/investmentUtils";
 
-// Export the main comparison engine
-export { calculateComparison } from "./utils/calculationEngine";
+// Export the main comparison engine and related calculations
+export { 
+  calculateComparison, 
+  calculateMonthlyValue,
+  calculateAbsoluteDifference
+} from "./utils/calculationEngine";
 
 // Re-export property utilities (like appreciation)
 export { getAppreciationRate } from "./utils/propertyUtils";

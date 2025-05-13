@@ -3,7 +3,7 @@ import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { ComparisonResults } from "@/lib/types";
 import { Area, AreaChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { formatCurrency } from "@/lib/calculations";
+import { formatCurrency, calculateAbsoluteDifference } from "@/lib/calculations";
 
 interface ComparisonChartProps {
   results: ComparisonResults | null;
@@ -34,7 +34,7 @@ const ComparisonChart = ({ results }: ComparisonChartProps) => {
             Renting: {formatCurrency(payload[1].value)}
           </p>
           <p className="text-gray-600 text-sm mt-1">
-            Difference: {formatCurrency(Math.abs(payload[0].value - payload[1].value))}
+            Difference: {formatCurrency(calculateAbsoluteDifference(payload[0].value, payload[1].value))}
             {payload[0].value > payload[1].value ? ' (Buying ahead)' : ' (Renting ahead)'}
           </p>
         </div>

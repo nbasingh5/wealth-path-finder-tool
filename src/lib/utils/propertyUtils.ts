@@ -17,31 +17,16 @@ export const getAppreciationRate = (buying: BuyingInputs): number => {
   }
 };
 
-// Calculate monthly property taxes
-export const calculateMonthlyPropertyTaxes = (
-  homeValue: number,
-  propertyTaxRate: number
-): number => {
-  return (homeValue * propertyTaxRate) / (12 * 100);
-};
+// Import property cost calculations from the centralized location
+import {
+  calculateMonthlyPropertyTaxes,
+  calculateMonthlyHomeInsurance,
+  calculateMonthlyMaintenanceCosts
+} from "./propertyCostUtils";
 
-// Calculate monthly home insurance
-export const calculateMonthlyHomeInsurance = (
-  homeValue: number,
-  homeInsuranceRate: number
-): number => {
-  return (homeValue * homeInsuranceRate) / (12 * 100);
-};
-
-// Calculate monthly home maintenance costs
-export const calculateMonthlyMaintenanceCosts = (
-  homeValue: number,
-  maintenanceCosts: number,
-  usePercentage: boolean
-): number => {
-  if (usePercentage) {
-    return (homeValue * maintenanceCosts) / (12 * 100);
-  } else {
-    return maintenanceCosts / 12;
-  }
+// Re-export for backward compatibility
+export {
+  calculateMonthlyPropertyTaxes,
+  calculateMonthlyHomeInsurance,
+  calculateMonthlyMaintenanceCosts
 };

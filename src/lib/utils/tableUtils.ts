@@ -1,6 +1,7 @@
 // Table utility functions for data transformation and display logic
 
 import { MonthlyTableData, YearlyTableData } from "../types/tableTypes";
+import { calculateMonthlyValue } from "./calculationEngine";
 
 /**
  * Generates monthly data based on yearly data
@@ -86,25 +87,6 @@ export const generateMonthlyData = (year: number, rowData: YearlyTableData): Mon
   return monthlyData;
 };
 
-/**
- * Helper function to estimate monthly accumulating values
- * This approximates growth throughout the year
- */
-export const calculateMonthlyValue = (yearEndValue?: number, month?: number, year?: number): number | undefined => {
-  if (!yearEndValue || !month || !year || year === 0) return yearEndValue;
-  
-  // For year 1, use a more accurate formula that accounts for initial investments
-  if (year === 1) {
-    const initialValue = yearEndValue / Math.pow(1.01, 12); // Approximate starting value
-    const monthlyGrowthRate = Math.pow(yearEndValue / initialValue, 1/12);
-    return initialValue * Math.pow(monthlyGrowthRate, month);
-  }
-  
-  // For other years, use a more accurate compounding formula
-  // instead of simple linear approximation
-  const monthlyGrowthRate = Math.pow(1.01, 1/12); // Approximate 1% monthly growth
-  return yearEndValue / Math.pow(monthlyGrowthRate, 12-month);
-};
 
 /**
  * Get tooltip explanation for a column
