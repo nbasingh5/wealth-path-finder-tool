@@ -1,4 +1,5 @@
 import { ComparisonResults } from "@/lib/types";
+import { TableColumn, ComparisonTableData, YearlyTableData } from "@/lib/types/tableTypes";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { useState } from "react";
@@ -38,7 +39,7 @@ const ComparisonTable = ({ results }: ComparisonTableProps) => {
     }));
   };
 
-  const summaryColumns = [
+  const summaryColumns: TableColumn<ComparisonTableData>[] = [
     { key: "year", label: "Year" },
     { key: "yearlyIncome", label: "Annual Income" },
     { key: "buyingLeftoverIncome", label: "Buying Leftover Income" },
@@ -51,7 +52,7 @@ const ComparisonTable = ({ results }: ComparisonTableProps) => {
     { key: "betterOption", label: "Better Option" }
   ];
 
-  const buyingColumns = [
+  const buyingColumns: TableColumn<YearlyTableData>[] = [
     { key: "year", label: "Year" },
     { key: "yearlyIncome", label: "Annual Income" },
     { key: "mortgagePayment", label: "Mortgage Payment" },
@@ -70,7 +71,7 @@ const ComparisonTable = ({ results }: ComparisonTableProps) => {
     { key: "totalWealth", label: "Total Wealth" }
   ];
 
-  const rentingColumns = [
+  const rentingColumns: TableColumn<YearlyTableData>[] = [
     { key: "year", label: "Year" },
     { key: "yearlyIncome", label: "Annual Income" },
     { key: "totalRent", label: "Total Rent" },

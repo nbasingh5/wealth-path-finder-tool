@@ -1,10 +1,11 @@
 
 import { Table, TableBody, TableHeader, TableRow, TableHead } from "../ui/table";
 import ExpandableRow from "./ExpandableRow";
+import { ComparisonTableData, TableColumn, YearlyTableData } from "@/lib/types/tableTypes";
 
 interface ComparisonTableTabProps {
   data: any[];
-  columns: { key: string; label: string }[];
+  columns: TableColumn<any>[];
   tabId: string;
   expandedRows: Record<string, boolean>;
   onToggleRow: (tabId: string, rowId: number) => void;
@@ -23,7 +24,7 @@ const ComparisonTableTab = ({
         <TableHeader>
           <TableRow>
             {columns.map(col => (
-              <TableHead key={col.key}>{col.label}</TableHead>
+              <TableHead key={col.key as string}>{col.label}</TableHead>
             ))}
           </TableRow>
         </TableHeader>
