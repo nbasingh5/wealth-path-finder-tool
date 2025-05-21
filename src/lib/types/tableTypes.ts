@@ -10,7 +10,6 @@ export interface TableColumn<T> {
 export interface MonthlyTableData {
   month: number;
   yearlyIncome: number;
-  leftoverIncome: number;
   mortgagePayment?: number;
   principalPaid?: number;
   interestPaid?: number;
@@ -21,10 +20,10 @@ export interface MonthlyTableData {
   homeValue?: number;
   homeEquity?: number;
   loanBalance?: number;
-  investementsWithEarnings?: number;
+  investmentsWithEarnings?: number;
   amountInvested: number;
   investmentEarnings: number;
-  monthlySavings: number;
+  yearlySavings: number;
   investmentValueBeforeTax?: number;
   capitalGainsTaxPaid?: number;
   investmentValueAfterTax?: number;
@@ -42,17 +41,16 @@ export interface YearlyTableData {
   homeInsurance?: number;
   maintenanceCosts?: number;
   totalRent?: number;
-  leftoverIncome: number;
+  yearlySavings: number;
   amountInvested: number;
   investmentEarnings: number;
-  investementsWithEarnings?: number;
+  investmentsWithEarnings?: number;
   loanBalance?: number;
   homeValue?: number;
   homeEquity?: number;
   totalWealthBuying: number;
   initialInvestment?: number;
   additionalContributions?: number;
-  monthlySavings?: number;
   investmentValueBeforeTax?: number;
   capitalGainsTaxPaid?: number;
   investmentValueAfterTax?: number;

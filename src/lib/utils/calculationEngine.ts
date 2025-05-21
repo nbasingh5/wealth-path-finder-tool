@@ -57,10 +57,10 @@ export const calculateComparison = (formData: FormData): ComparisonResults => {
       cumulativeBuyingCosts,
       cumulativeRentingCosts,
       yearlyIncome: buyingYearData.yearlyIncome, // Assume income is the same
-      buyingLeftoverIncome: buyingYearData.leftoverIncome,
-      rentingLeftoverIncome: rentingYearData.leftoverIncome,
-      buyingLeftoverInvestmentValue: buyingYearData.investementsWithEarnings,
-      rentingLeftoverInvestmentValue: rentingYearData.investementsWithEarnings,
+      buyingLeftoverIncome: buyingYearData.yearlySavings,
+      rentingLeftoverIncome: rentingYearData.yearlySavings,
+      buyingLeftoverInvestmentValue: buyingYearData.investmentsWithEarnings,
+      rentingLeftoverInvestmentValue: rentingYearData.investmentsWithEarnings,
     });
   }
 
@@ -84,8 +84,6 @@ export const calculateComparison = (formData: FormData): ComparisonResults => {
   const validatedFinalRentingWealth = isNaN(finalRentingWealth) ? 0 : finalRentingWealth;
   const validatedDifference = isNaN(difference) ? 0 : Math.abs(difference);
 
-  console.log({buyingResults})
-  console.log({rentingResults})
 
   return {
     yearlyComparisons,

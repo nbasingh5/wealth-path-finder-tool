@@ -30,7 +30,8 @@ const ComparisonTable = ({ results }: ComparisonTableProps) => {
     );
   }
 
-  const { yearlyComparisons, buyingResults, rentingResults } = results;
+  const { yearlyComparisons, buyingResults, rentingResults } = results; 
+  console.log({buyingResults})
 
   const toggleRow = (tabKey: string, rowId: number) => {
     setExpandedRows(prev => ({
@@ -61,10 +62,10 @@ const ComparisonTable = ({ results }: ComparisonTableProps) => {
     { key: "propertyTaxes", label: "Property Taxes" },
     { key: "homeInsurance", label: "Insurance" },
     { key: "maintenanceCosts", label: "Maintenance" },
-    { key: "leftoverIncome", label: "Leftover Income" },
+    { key: "yearlySavings", label: "Yearly Savings" },
     { key: "amountInvested", label: "Amount Invested" },
     { key: "investmentEarnings", label: "Investment Earnings" },
-    { key: "investementsWithEarnings", label: "Investments with Earnings" },
+    { key: "investmentsWithEarnings", label: "Investments with Earnings" },
     { key: "loanBalance", label: "Loan Balance" },
     { key: "homeValue", label: "Home Value" },
     { key: "homeEquity", label: "Home Equity" },
@@ -75,8 +76,7 @@ const ComparisonTable = ({ results }: ComparisonTableProps) => {
     { key: "year", label: "Year" },
     { key: "yearlyIncome", label: "Annual Income" },
     { key: "totalRent", label: "Total Rent" },
-    { key: "leftoverIncome", label: "Leftover Income" },
-    { key: "monthlySavings", label: "Monthly Savings" },
+    { key: "yearlySavings", label: "Yearly Savings" },
     { key: "amountInvested", label: "Amount Invested" },
     { key: "investmentEarnings", label: "Investment Earnings" },
     { key: "investmentValueBeforeTax", label: "Investment Value (Before Tax)" },
