@@ -1,12 +1,12 @@
 
-import React, { ChangeEvent } from "react";
+import React, { ChangeEvent, ReactNode } from "react";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { StandaloneFormDescription } from "./StandaloneFormDescription";
 
 interface CurrencyInputProps {
   id: string;
-  label: string;
+  label: ReactNode;
   value: number;
   onChange: (value: number) => void;
   description?: string;

@@ -71,7 +71,7 @@ export interface MonthlyRentingDataPoint {
   investmentValueBeforeTax: number;
   capitalGainsTax: number;
   investmentValueAfterTax: number;
-  totalWealth: number;
+  totalWealthRenting: number;
   // Legacy fields (keeping for compatibility)
   initialInvestment: number;
   additionalContributions: number;
@@ -89,7 +89,7 @@ export interface YearlyBuyingResult {
   maintenanceCosts: number;
   homeValue: number;
   homeEquity: number;
-  totalWealth: number;
+  totalWealthBuying: number;
   yearlyIncome: number;
   leftoverIncome: number;        // Total leftover income during the year
   amountInvested: number;         // Total amount put into investments (initial + contributions)
@@ -109,7 +109,7 @@ export interface YearlyRentingResult {
   capitalGainsTaxPaid: number;
   investmentEarnings: number;     // Earnings from investments during the year (after-tax)
   investmentValueAfterTax: number; // End-of-year investment value (after-tax)
-  totalWealth: number;
+  totalWealthRenting: number;
   yearlyIncome: number;
   leftoverIncome: number;        // Total leftover income during the year
   leftoverInvestmentValue: number; // Same as investmentValueAfterTax for consistency

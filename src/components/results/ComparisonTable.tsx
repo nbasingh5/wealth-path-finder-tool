@@ -68,7 +68,7 @@ const ComparisonTable = ({ results }: ComparisonTableProps) => {
     { key: "loanBalance", label: "Loan Balance" },
     { key: "homeValue", label: "Home Value" },
     { key: "homeEquity", label: "Home Equity" },
-    { key: "totalWealth", label: "Total Wealth" }
+    { key: "totalWealthBuying", label: "Total Wealth" }
   ];
 
   const rentingColumns: TableColumn<YearlyTableData>[] = [
@@ -82,7 +82,7 @@ const ComparisonTable = ({ results }: ComparisonTableProps) => {
     { key: "investmentValueBeforeTax", label: "Investment Value (Before Tax)" },
     { key: "capitalGainsTaxPaid", label: "Capital Gains Tax" },
     { key: "investmentValueAfterTax", label: "Investment Value (After Tax)" },
-    { key: "totalWealth", label: "Total Wealth" }
+    { key: "totalWealthRenting", label: "Total Wealth" }
   ];
 
   //  Enhance yearly comparisons with better option

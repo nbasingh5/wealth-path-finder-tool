@@ -43,7 +43,7 @@ export const generateMonthlyData = (year: number, rowData: YearlyTableData): Mon
         investmentValueBeforeTax: rowData.investmentValueBeforeTax ? rowData.investmentValueBeforeTax / 12 : 0,
         capitalGainsTaxPaid: 0,
         investmentValueAfterTax: rowData.investmentValueAfterTax ? rowData.investmentValueAfterTax / 12 : 0,
-        totalWealth: rowData.totalWealth
+        totalWealthBuying: rowData.totalWealthBuying
       });
     }
     return monthlyData;
@@ -80,7 +80,7 @@ export const generateMonthlyData = (year: number, rowData: YearlyTableData): Mon
       investmentValueBeforeTax: monthlyDataPoint.investmentValueBeforeTax || 0,
       capitalGainsTaxPaid: monthlyDataPoint.capitalGainsTax || 0,
       investmentValueAfterTax: monthlyDataPoint.investmentValueAfterTax || 0,
-      totalWealth: monthlyDataPoint.totalWealth || 0,
+      totalWealthBuying: monthlyDataPoint.totalWealth || 0,
     });
   }
   
@@ -138,7 +138,9 @@ export const getTooltipContent = (key: string): string => {
       return "Investment value after capital gains tax.";
     
     // Wealth and comparison
-    case 'totalWealth':
+    case 'totalWealthRenting':
+      return "Total wealth including initial savings, downpayment and investments.";
+    case 'totalWealthBuying':
       return "Total wealth including home equity and investments.";
     case 'difference':
       return "Difference between buying and renting wealth (positive means buying is better).";
@@ -196,8 +198,6 @@ export const getMonthlyTooltipContent = (key: string): string => {
       return "Capital gains tax paid. This is only applied at the end of the year (month 12).";
     case 'investmentValueAfterTax':
       return "Investment value after capital gains tax.";
-    case 'totalWealth':
-      return "Total wealth including home equity and investments.";
     default:
       return "Value for month " + key;
   }

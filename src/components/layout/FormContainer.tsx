@@ -9,6 +9,7 @@ import InvestmentInputsForm from "@/components/forms/InvestmentInputsForm";
 
 interface FormContainerProps {
   formData: FormData;
+  validationError: string | null;
   onGeneralChange: (general: GeneralInputs) => void;
   onBuyingChange: (buying: BuyingInputs) => void;
   onRentingChange: (renting: RentingInputs) => void;
@@ -19,6 +20,7 @@ interface FormContainerProps {
 
 const FormContainer: React.FC<FormContainerProps> = ({
   formData,
+  validationError,
   onGeneralChange,
   onBuyingChange,
   onRentingChange,
@@ -47,24 +49,41 @@ const FormContainer: React.FC<FormContainerProps> = ({
           <GeneralInputsForm 
             values={formData.general} 
             onChange={onGeneralChange}
+            formData={formData}
+            validationError={validationError}
           />
           
-          <div className="flex flex-col sm:flex-row gap-2">
-            <button
-              onClick={onCalculate}
-              className="flex-1 inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium h-11 rounded-md px-8 bg-primary text-primary-foreground hover:bg-primary/90"
-            >
-              <Calculator className="w-4 h-4 mr-2" />
-              Calculate Results
-            </button>
+          <div className="space-y-4">
+            {validationError && (
+              <div className="p-3 text-sm border border-red-300 bg-red-50 text-red-800 rounded-md">
+                <p className="font-medium">Validation Error:</p>
+                <p>{validationError}</p>
+              </div>
+            )}
             
-            <button
-              onClick={onReset}
-              className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium h-11 rounded-md px-8 border border-input bg-background hover:bg-accent hover:text-accent-foreground"
-            >
-              <RefreshCw className="w-4 h-4 mr-2" />
-              Reset
-            </button>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <button
+                onClick={onCalculate}
+                disabled={!!validationError}
+                className={`flex-1 inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium h-11 rounded-md px-8 ${
+                  validationError 
+                    ? 'bg-gray-400 cursor-not-allowed' 
+                    : 'bg-primary text-primary-foreground hover:bg-primary/90'
+                }`}
+                title={validationError || "Calculate results"}
+              >
+                <Calculator className="w-4 h-4 mr-2" />
+                Calculate Results
+              </button>
+              
+              <button
+                onClick={onReset}
+                className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium h-11 rounded-md px-8 border border-input bg-background hover:bg-accent hover:text-accent-foreground"
+              >
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Reset
+              </button>
+            </div>
           </div>
         </div>
       </div>

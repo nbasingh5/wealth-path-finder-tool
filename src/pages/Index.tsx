@@ -11,6 +11,7 @@ const Index = () => {
   const {
     formData,
     results,
+    validationError,
     handleGeneralChange,
     handleBuyingChange,
     handleRentingChange,
@@ -28,6 +29,7 @@ const Index = () => {
         
         <FormContainer 
           formData={formData}
+          validationError={validationError}
           onGeneralChange={handleGeneralChange}
           onBuyingChange={handleBuyingChange}
           onRentingChange={handleRentingChange}

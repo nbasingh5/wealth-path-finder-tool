@@ -1,7 +1,8 @@
 
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import { GeneralInputs } from "@/lib/types";
+import { FormData, GeneralInputs } from "@/lib/types";
+import { AlertCircle } from "lucide-react";
 import CurrencyInput from "./CurrencyInput";
 import SliderInput from "./SliderInput";
 import { Switch } from "../ui/switch";
@@ -12,9 +13,18 @@ import PercentageInput from "./PercentageInput";
 interface GeneralInputsFormProps {
   values: GeneralInputs;
   onChange: (values: GeneralInputs) => void;
+  formData?: FormData; // Optional full form data for validation
+  validationError?: string | null; // Optional validation error
 }
 
-const GeneralInputsForm = ({ values, onChange }: GeneralInputsFormProps) => {
+const GeneralInputsForm = ({ 
+  values, 
+  onChange, 
+  formData, 
+  validationError 
+}: GeneralInputsFormProps) => {
+  // Check if there's a validation error related to current savings
+  const hasSavingsError = validationError?.toLowerCase().includes('current savings');
   const handleTimeHorizonChange = (timeHorizon: number) => {
     onChange({ ...values, timeHorizon });
   };
@@ -89,13 +99,39 @@ const GeneralInputsForm = ({ values, onChange }: GeneralInputsFormProps) => {
           
           <Separator />
           
-          <CurrencyInput
-            id="currentSavings"
-            label="Current Savings"
-            value={values.currentSavings}
-            onChange={handleCurrentSavingsChange}
-            description="Your total current savings"
-          />
+          <div className="space-y-2">
+            <CurrencyInput
+              id="currentSavings"
+              label={
+                <div className="flex items-center gap-2">
+                  <span>Current Savings</span>
+                  {hasSavingsError && (
+                    <AlertCircle className="h-4 w-4 text-red-500" />
+                  )}
+                </div>
+              }
+              value={values.currentSavings}
+              onChange={handleCurrentSavingsChange}
+              description="Your total current savings"
+              className={hasSavingsError ? "border-red-300 focus-visible:ring-red-500" : ""}
+            />
+            
+            {hasSavingsError && (
+              <p className="text-sm text-red-500 mt-1">
+                {validationError}
+              </p>
+            )}
+            
+            {formData && (
+              <div className="text-sm text-muted-foreground mt-1">
+                <span>Required down payment: </span>
+                <span className="font-medium">
+                  ${(formData.buying.housePrice * (formData.buying.downPaymentPercent / 100)).toLocaleString()}
+                </span>
+                <span> ({formData.buying.downPaymentPercent}% of ${formData.buying.housePrice.toLocaleString()})</span>
+              </div>
+            )}
+          </div>
         </div>
       </CardContent>
     </Card>

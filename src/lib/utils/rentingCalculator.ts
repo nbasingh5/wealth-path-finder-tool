@@ -5,6 +5,7 @@ import {
   InvestmentInputs,
   MonthlyRentingDataPoint,
   YearlyRentingResult,
+  BuyingInputs,
 } from "../types";
 import {
   calculateInvestmentReturnForMonth,
@@ -25,7 +26,7 @@ interface RentingCalculationResult {
 export const calculateRentingYearlyData = ({
   general,
   renting,
-  investment,
+  investment
 }: RentingCalculationInputs): RentingCalculationResult => {
   const timeHorizonYears = general.timeHorizon;
   const rentingResults: YearlyRentingResult[] = [];
@@ -51,7 +52,7 @@ export const calculateRentingYearlyData = ({
       investmentValueBeforeTax: rentingInvestmentValue,
       capitalGainsTax: 0,
       investmentValueAfterTax: rentingInvestmentValue,
-      totalWealth: rentingInvestmentValue,
+      totalWealthRenting: rentingInvestmentValue,
       initialInvestment: general.currentSavings,
       additionalContributions: 0,
     });
@@ -65,7 +66,7 @@ export const calculateRentingYearlyData = ({
     investmentValueBeforeTax: rentingInvestmentValue,
     capitalGainsTaxPaid: 0,
     investmentValueAfterTax: rentingInvestmentValue,
-    totalWealth: rentingInvestmentValue,
+    totalWealthRenting: rentingInvestmentValue,
     yearlyIncome: currentYearlyIncome,
     leftoverIncome: 0,
     leftoverInvestmentValue: rentingInvestmentValue,
@@ -124,7 +125,7 @@ export const calculateRentingYearlyData = ({
         investmentValueBeforeTax: endBeforeTax,
         capitalGainsTax: 0,
         investmentValueAfterTax: endAfterTax,
-        totalWealth: endAfterTax,
+        totalWealthRenting: endAfterTax,
         initialInvestment: previousYear.initialInvestment,
         additionalContributions: rentingTotalContributions,
       });
@@ -148,7 +149,7 @@ export const calculateRentingYearlyData = ({
       investmentValueBeforeTax: investmentValueAfterTax,
       capitalGainsTaxPaid: annualTax,
       investmentValueAfterTax,
-      totalWealth: investmentValueAfterTax,
+      totalWealthRenting: investmentValueAfterTax,
       yearlyIncome: currentYearlyIncome,
       leftoverIncome: yearlyLeftoverIncome,
       leftoverInvestmentValue: investmentValueAfterTax,
@@ -171,8 +172,8 @@ export const calculateRentingYearlyData = ({
       investment.capitalGainsTaxRate
     );
   rentingResults[timeHorizonYears].capitalGainsTaxPaid = taxOwed;
-  rentingResults[timeHorizonYears].investmentValueAfterTax = rentingResults[timeHorizonYears].totalWealth - taxOwed
-  rentingResults[timeHorizonYears].totalWealth = rentingResults[timeHorizonYears].investmentValueAfterTax
+  rentingResults[timeHorizonYears].investmentValueAfterTax = rentingResults[timeHorizonYears].totalWealthRenting - taxOwed
+  rentingResults[timeHorizonYears].totalWealthRenting = rentingResults[timeHorizonYears].investmentValueAfterTax
   const finalResult = rentingResults[rentingResults.length - 1];
   console.log(rentingResults
 

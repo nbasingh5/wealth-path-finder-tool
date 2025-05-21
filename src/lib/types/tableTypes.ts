@@ -28,7 +28,7 @@ export interface MonthlyTableData {
   investmentValueBeforeTax?: number;
   capitalGainsTaxPaid?: number;
   investmentValueAfterTax?: number;
-  totalWealth: number;
+  totalWealthBuying: number;
 }
 
 // Yearly data types for tables
@@ -49,7 +49,7 @@ export interface YearlyTableData {
   loanBalance?: number;
   homeValue?: number;
   homeEquity?: number;
-  totalWealth: number;
+  totalWealthBuying: number;
   initialInvestment?: number;
   additionalContributions?: number;
   monthlySavings?: number;

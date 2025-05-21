@@ -65,13 +65,13 @@ export const calculateBuyingYearlyData = ({
       loanBalance,
       monthlyIncome: currentYearlyIncome / 12,
       mortgagePayment: 0,
-      principalPayment: 0,
+      principalPayment: downPaymentAmount,
       interestPayment: 0,
       propertyTaxes: 0,
       homeInsurance: 0,
       maintenanceCosts: 0,
       leftoverIncome: 0,
-      investmentValue: buyingInvestmentValue,
+      investmentValue: buyingInitialInvestment,
       initialInvestment: buyingInitialInvestment,
       additionalContributions: 0,
       monthlySavings: 0,
@@ -81,7 +81,7 @@ export const calculateBuyingYearlyData = ({
   buyingResults.push({
     year: 0,
     mortgagePayment: 0,
-    principalPaid: 0,
+    principalPaid: downPaymentAmount,
     interestPaid: 0,
     loanBalance,
     propertyTaxes: 0,
@@ -89,7 +89,7 @@ export const calculateBuyingYearlyData = ({
     maintenanceCosts: 0,
     homeValue: initialHomeValue,
     homeEquity: downPaymentAmount,
-    totalWealth: downPaymentAmount + buyingInvestmentValue, // Initial wealth
+    totalWealthBuying: downPaymentAmount + buyingInvestmentValue, // Initial wealth
     yearlyIncome: currentYearlyIncome,
     leftoverIncome: 0,
     leftoverInvestmentValue: buyingInvestmentValue,
@@ -116,7 +116,7 @@ export const calculateBuyingYearlyData = ({
     // Determine amount invested from the previous year
     const previousYear = buyingResults[year - 1];
     const amountInvested = previousYear.leftoverInvestmentValue;
-
+    console.log("Amount Invested:", amountInvested);
     for (let month = 1; month <= 12; month++) {
       const globalMonthNumber = (year - 1) * 12 + month;
       const monthlyIncome = currentYearlyIncome / 12;
@@ -156,8 +156,9 @@ export const calculateBuyingYearlyData = ({
         monthlyHomeInsurance +
         monthlyMaintenanceCosts;
 
+      // Only subtract expenses (not principal payment) so leftover income can be invested
       const buyingLeftoverMonthlyIncome =
-        monthlyIncome - monthlyBuyingExpenses - principalPayment;
+        monthlyIncome - monthlyBuyingExpenses;
 
       monthlyBuyingSavings.push(buyingLeftoverMonthlyIncome);
       yearlyBuyingLeftoverIncome += buyingLeftoverMonthlyIncome;
@@ -204,7 +205,7 @@ export const calculateBuyingYearlyData = ({
       currentHomeValue *= 1 + monthlyAppreciationRate;
     } // End monthly loop
 
-    const homeEquity = currentHomeValue - Math.max(0, loanBalance);
+    const homeEquity = currentHomeValue - yearlyPrincipalPaid;
     const buyingInvestmentGain = Math.max(0, buyingInvestmentValue - buyingCostBasis);
     
     // Calculate capital gains tax only on the gains, not the entire value
@@ -232,7 +233,7 @@ export const calculateBuyingYearlyData = ({
       maintenanceCosts: yearlyMaintenanceCosts,
       homeValue: currentHomeValue,
       homeEquity,
-      totalWealth: totalBuyingWealthAfterTax, // Use wealth after tax
+      totalWealthBuying: totalBuyingWealthAfterTax, // Use wealth after tax
       yearlyIncome: currentYearlyIncome,
       leftoverIncome: yearlyBuyingLeftoverIncome,
       leftoverInvestmentValue: buyingInvestmentValueAfterTax,

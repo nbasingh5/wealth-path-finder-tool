@@ -23,7 +23,7 @@ export const calculateComparison = (formData: FormData): ComparisonResults => {
   const { rentingResults } = calculateRentingYearlyData({
     general,
     renting,
-    investment,
+    investment
   });
 
   // --- Combine Results and Calculate Comparisons ---
@@ -51,9 +51,9 @@ export const calculateComparison = (formData: FormData): ComparisonResults => {
     
     yearlyComparisons.push({
       year,
-      buyingWealth: buyingYearData.totalWealth,
-      rentingWealth: rentingYearData.totalWealth,
-      difference: buyingYearData.totalWealth - rentingYearData.totalWealth,
+      buyingWealth: buyingYearData.totalWealthBuying,
+      rentingWealth: rentingYearData.totalWealthRenting,
+      difference: buyingYearData.totalWealthBuying - rentingYearData.totalWealthRenting,
       cumulativeBuyingCosts,
       cumulativeRentingCosts,
       yearlyIncome: buyingYearData.yearlyIncome, // Assume income is the same
@@ -65,8 +65,8 @@ export const calculateComparison = (formData: FormData): ComparisonResults => {
   }
 
   // --- Final Summary ---
-  const finalBuyingWealth = buyingResults[timeHorizonYears].totalWealth;
-  const finalRentingWealth = rentingResults[timeHorizonYears].totalWealth;
+  const finalBuyingWealth = buyingResults[timeHorizonYears].totalWealthBuying;
+  const finalRentingWealth = rentingResults[timeHorizonYears].totalWealthRenting;
   const difference = finalBuyingWealth - finalRentingWealth;
 
   // Determine better option with reasonable threshold
