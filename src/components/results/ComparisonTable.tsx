@@ -31,7 +31,6 @@ const ComparisonTable = ({ results }: ComparisonTableProps) => {
   }
 
   const { yearlyComparisons, buyingResults, rentingResults } = results; 
-  console.log({buyingResults})
 
   const toggleRow = (tabKey: string, rowId: number) => {
     setExpandedRows(prev => ({
@@ -69,6 +68,7 @@ const ComparisonTable = ({ results }: ComparisonTableProps) => {
     { key: "loanBalance", label: "Loan Balance" },
     { key: "homeValue", label: "Home Value" },
     { key: "homeEquity", label: "Home Equity" },
+    { key: "capitalGainsTaxPaid", label: "Capital Gains Tax" },
     { key: "totalWealthBuying", label: "Total Wealth" }
   ];
 
@@ -81,7 +81,6 @@ const ComparisonTable = ({ results }: ComparisonTableProps) => {
     { key: "investmentEarnings", label: "Investment Earnings" },
     { key: "investmentValueBeforeTax", label: "Investment Value (Before Tax)" },
     { key: "capitalGainsTaxPaid", label: "Capital Gains Tax" },
-    { key: "investmentValueAfterTax", label: "Investment Value (After Tax)" },
     { key: "totalWealthRenting", label: "Total Wealth" }
   ];
 

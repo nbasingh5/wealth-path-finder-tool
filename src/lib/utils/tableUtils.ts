@@ -40,7 +40,6 @@ export const generateMonthlyData = (year: number, rowData: YearlyTableData): Mon
       yearlySavings: monthlySavingsAmount,
       investmentValueBeforeTax: monthlyDataPoint.investmentValueBeforeTax || 0,
       capitalGainsTaxPaid: monthlyDataPoint.capitalGainsTax || 0,
-      investmentValueAfterTax: monthlyDataPoint.investmentValueAfterTax || 0,
       totalWealthBuying: monthlyDataPoint.totalWealth || 0,
       investmentsWithEarnings: monthlyDataPoint.investmentsWithEarnings || 0,
     });
@@ -79,7 +78,7 @@ export const getTooltipContent = (key: string): string => {
     case 'homeValue':
       return "Current home value after appreciation.";
     case 'homeEquity':
-      return "Home value minus remaining loan balance.";
+      return "Downpayment plus principal paid.";
     case 'loanBalance':
       return "Remaining mortgage balance at the end of this year.";
     
@@ -96,8 +95,6 @@ export const getTooltipContent = (key: string): string => {
       return "Value of investments before capital gains tax.";
     case 'capitalGainsTaxPaid':
       return "Capital gains tax on investment earnings.";
-    case 'investmentValueAfterTax':
-      return "Investment value after capital gains tax.";
     
     // Wealth and comparison
     case 'totalWealthRenting':
@@ -141,7 +138,7 @@ export const getMonthlyTooltipContent = (key: string): string => {
     case 'homeValue':
       return "Estimated home value for this month.";
     case 'homeEquity':
-      return "Home value minus remaining loan balance.";
+      return "Downpayment plus principal paid.";
     case 'loanBalance':
       return "Remaining mortgage balance.";
     case 'leftoverIncome':
@@ -158,8 +155,6 @@ export const getMonthlyTooltipContent = (key: string): string => {
       return "Value of investments before capital gains tax.";
     case 'capitalGainsTaxPaid':
       return "Capital gains tax paid. This is only applied at the end of the year (month 12).";
-    case 'investmentValueAfterTax':
-      return "Investment value after capital gains tax.";
     default:
       return "Value for month " + key;
   }

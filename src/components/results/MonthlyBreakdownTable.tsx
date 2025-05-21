@@ -13,8 +13,7 @@ const MonthlyBreakdownTable = ({ year, columns, rowData }: MonthlyBreakdownTable
   
   // Generate monthly data using the utility function
   const monthlyData: MonthlyTableData[] = generateMonthlyData(year, rowData);
-  // const monthlyData: MonthlyTableData[] = rowData.monthlyData || [];
-  console.log("Monthly Data:", monthlyData);
+
   return (
     <div className="py-2 w-full">
       <h4 className="text-sm font-medium mb-2">Monthly Breakdown for Year {year}</h4>

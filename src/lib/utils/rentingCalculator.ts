@@ -19,7 +19,6 @@ interface RentingCalculationInputs {
 
 interface RentingCalculationResult {
   rentingResults: YearlyRentingResult[];
-  finalRentingInvestmentValueAfterTax: number;
 }
 
 export const calculateRentingYearlyData = ({
@@ -49,7 +48,7 @@ export const calculateRentingYearlyData = ({
       investmentEarnings: 0,
       investmentValueBeforeTax: rentingInvestmentValue,
       capitalGainsTax: 0,
-      investmentValueAfterTax: rentingInvestmentValue,
+  
       totalWealthRenting: rentingInvestmentValue,
       initialInvestment: general.currentSavings,
       additionalContributions: 0,
@@ -63,7 +62,6 @@ export const calculateRentingYearlyData = ({
     amountInvested: general.currentSavings,
     investmentValueBeforeTax: rentingInvestmentValue,
     capitalGainsTaxPaid: 0,
-    investmentValueAfterTax: rentingInvestmentValue,
     totalWealthRenting: rentingInvestmentValue,
     yearlyIncome: currentYearlyIncome,
     investmentsWithEarnings: rentingInvestmentValue,
@@ -85,7 +83,7 @@ export const calculateRentingYearlyData = ({
     monthlyRentingData[year] = [];
 
     const previousYear = rentingResults[year - 1];
-    const startOfYearBalance = previousYear.investmentValueAfterTax;
+    const startOfYearBalance = previousYear.investmentValueBeforeTax;
     let previousMonthInvestmentValue = startOfYearBalance;
 
     for (let month = 1; month <= 12; month++) {
@@ -120,7 +118,6 @@ export const calculateRentingYearlyData = ({
         investmentEarnings: earnings,
         investmentValueBeforeTax: endBeforeTax,
         capitalGainsTax: 0,
-        investmentValueAfterTax: endAfterTax,
         totalWealthRenting: endAfterTax,
         initialInvestment: previousYear.initialInvestment,
         additionalContributions: rentingTotalContributions,
@@ -130,23 +127,16 @@ export const calculateRentingYearlyData = ({
       rentingInvestmentValue = endBeforeTax;
     }
 
-    const annualTax = 0;
-
-    rentingCumulativeTaxesPaid += annualTax;
-
-    const investmentValueAfterTax = rentingInvestmentValue - annualTax;
-
     rentingResults.push({
       year,
       totalRent: yearlyRent,
       amountInvested: yearlyInvested,
-      investmentValueBeforeTax: investmentValueAfterTax,
-      capitalGainsTaxPaid: annualTax,
-      investmentValueAfterTax,
-      totalWealthRenting: investmentValueAfterTax,
+      investmentValueBeforeTax: rentingInvestmentValue,
+      capitalGainsTaxPaid: 0,
+      totalWealthRenting: rentingInvestmentValue,
       yearlyIncome: currentYearlyIncome,
       yearlySavings: yearlyLeftoverIncome,
-      investmentsWithEarnings: investmentValueAfterTax,
+      investmentsWithEarnings: rentingInvestmentValue,
       initialInvestment: general.currentSavings,
       additionalContributions: rentingTotalContributions,
       investmentEarnings: totalGains,
@@ -166,12 +156,8 @@ export const calculateRentingYearlyData = ({
       investment.capitalGainsTaxRate
     );
   rentingResults[timeHorizonYears].capitalGainsTaxPaid = taxOwed;
-  rentingResults[timeHorizonYears].investmentValueAfterTax = rentingResults[timeHorizonYears].totalWealthRenting - taxOwed
-  rentingResults[timeHorizonYears].totalWealthRenting = rentingResults[timeHorizonYears].investmentValueAfterTax
-  const finalResult = rentingResults[rentingResults.length - 1];
+  rentingResults[timeHorizonYears].totalWealthRenting =  rentingResults[timeHorizonYears].totalWealthRenting - taxOwed
   return {
     rentingResults,
-    finalRentingInvestmentValueAfterTax:
-      finalResult.investmentsWithEarnings,
   };
 };
