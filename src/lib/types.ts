@@ -57,6 +57,7 @@ export interface MonthlyBuyingDataPoint {
   initialInvestment: number; // Added field
   additionalContributions: number; // Added field
   monthlySavings: number; // Added field
+  investementsWithEarnings: number; // Added field
 }
 
 export interface MonthlyRentingDataPoint {
@@ -94,7 +95,7 @@ export interface YearlyBuyingResult {
   leftoverIncome: number;        // Total leftover income during the year
   amountInvested: number;         // Total amount put into investments (initial + contributions)
   investmentEarnings: number;     // Earnings from investments during the year (after-tax)
-  leftoverInvestmentValue: number; // End-of-year investment value (after-tax)
+  investementsWithEarnings: number; // End-of-year investment value (after-tax)
   initialInvestment?: number; // Added to show initial investment
   additionalContributions?: number; // Cumulative additional contributions up to this year
   monthlyData?: MonthlyBuyingDataPoint[]; // Optional for backward compatibility
@@ -112,7 +113,7 @@ export interface YearlyRentingResult {
   totalWealthRenting: number;
   yearlyIncome: number;
   leftoverIncome: number;        // Total leftover income during the year
-  leftoverInvestmentValue: number; // Same as investmentValueAfterTax for consistency
+  investementsWithEarnings: number; // Same as investmentValueAfterTax for consistency
   initialInvestment?: number; // Added to show initial investment
   additionalContributions?: number; // Cumulative additional contributions up to this year
   monthlyData?: MonthlyRentingDataPoint[]; // Optional for backward compatibility

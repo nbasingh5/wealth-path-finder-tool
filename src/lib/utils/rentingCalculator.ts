@@ -5,7 +5,6 @@ import {
   InvestmentInputs,
   MonthlyRentingDataPoint,
   YearlyRentingResult,
-  BuyingInputs,
 } from "../types";
 import {
   calculateInvestmentReturnForMonth,
@@ -69,7 +68,7 @@ export const calculateRentingYearlyData = ({
     totalWealthRenting: rentingInvestmentValue,
     yearlyIncome: currentYearlyIncome,
     leftoverIncome: 0,
-    leftoverInvestmentValue: rentingInvestmentValue,
+    investementsWithEarnings: rentingInvestmentValue,
     initialInvestment: general.currentSavings,
     additionalContributions: 0,
     investmentEarnings: 0,
@@ -152,7 +151,7 @@ export const calculateRentingYearlyData = ({
       totalWealthRenting: investmentValueAfterTax,
       yearlyIncome: currentYearlyIncome,
       leftoverIncome: yearlyLeftoverIncome,
-      leftoverInvestmentValue: investmentValueAfterTax,
+      investementsWithEarnings: investmentValueAfterTax,
       initialInvestment: general.currentSavings,
       additionalContributions: rentingTotalContributions,
       investmentEarnings: totalGains,
@@ -181,6 +180,6 @@ export const calculateRentingYearlyData = ({
   return {
     rentingResults,
     finalRentingInvestmentValueAfterTax:
-      finalResult.leftoverInvestmentValue,
+      finalResult.investementsWithEarnings,
   };
 };

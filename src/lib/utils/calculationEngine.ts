@@ -59,8 +59,8 @@ export const calculateComparison = (formData: FormData): ComparisonResults => {
       yearlyIncome: buyingYearData.yearlyIncome, // Assume income is the same
       buyingLeftoverIncome: buyingYearData.leftoverIncome,
       rentingLeftoverIncome: rentingYearData.leftoverIncome,
-      buyingLeftoverInvestmentValue: buyingYearData.leftoverInvestmentValue,
-      rentingLeftoverInvestmentValue: rentingYearData.leftoverInvestmentValue,
+      buyingLeftoverInvestmentValue: buyingYearData.investementsWithEarnings,
+      rentingLeftoverInvestmentValue: rentingYearData.investementsWithEarnings,
     });
   }
 

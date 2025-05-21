@@ -7,7 +7,7 @@ import { getTooltipContent } from "@/lib/utils/tableUtils";
 
 const ExpandableRow = ({ rowData, isExpanded, onToggle, columns }: ExpandableRowProps) => {
   const year = rowData.year;
-  
+  // console.log("Row Data:", rowData);
   return (
     <>
       <TableRow 

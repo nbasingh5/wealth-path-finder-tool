@@ -10,7 +10,7 @@ const defaultGeneral: GeneralInputs = {
   annualIncome: 100000,
   incomeIncrease: false,
   annualIncomeGrowthRate: 3,
-  currentSavings: 50000,
+  currentSavings: 100000,
 };
 
 const defaultBuying: BuyingInputs = {

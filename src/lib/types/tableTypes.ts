@@ -21,7 +21,7 @@ export interface MonthlyTableData {
   homeValue?: number;
   homeEquity?: number;
   loanBalance?: number;
-  leftoverInvestmentValue?: number;
+  investementsWithEarnings?: number;
   amountInvested: number;
   investmentEarnings: number;
   monthlySavings: number;
@@ -45,7 +45,7 @@ export interface YearlyTableData {
   leftoverIncome: number;
   amountInvested: number;
   investmentEarnings: number;
-  leftoverInvestmentValue?: number;
+  investementsWithEarnings?: number;
   loanBalance?: number;
   homeValue?: number;
   homeEquity?: number;

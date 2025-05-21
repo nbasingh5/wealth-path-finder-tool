@@ -64,7 +64,7 @@ const ComparisonTable = ({ results }: ComparisonTableProps) => {
     { key: "leftoverIncome", label: "Leftover Income" },
     { key: "amountInvested", label: "Amount Invested" },
     { key: "investmentEarnings", label: "Investment Earnings" },
-    { key: "leftoverInvestmentValue", label: "Total Investments" },
+    { key: "investementsWithEarnings", label: "Investments with Earnings" },
     { key: "loanBalance", label: "Loan Balance" },
     { key: "homeValue", label: "Home Value" },
     { key: "homeEquity", label: "Home Equity" },

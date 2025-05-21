@@ -11,45 +11,44 @@ import { calculateMonthlyValue } from "./calculationEngine";
  */
 export const generateMonthlyData = (year: number, rowData: YearlyTableData): MonthlyTableData[] => {
   const monthlyData: MonthlyTableData[] = [];
-  
-  // For Year 0, we'll show the initial values for all 12 months
-  if (year === 0) {
-    for (let month = 1; month <= 12; month++) {
-      // For Year 0, amount invested is just the initial investment
-      const amountInvested = rowData.initialInvestment || 0;
+  console.log("Generating monthly data for year:", year, "with rowData:", rowData);
+  // // For Year 0, we'll show the initial values for all 12 months
+  // if (year === 0) {
+  //   for (let month = 1; month <= 12; month++) {
+  //     // For Year 0, amount invested is just the initial investment
+  //     const amountInvested = rowData.amountInvested || 0;
       
-      const investmentEarnings = rowData.leftoverInvestmentValue 
-        ? Math.max(0, rowData.leftoverInvestmentValue - amountInvested)
-        : 0;
+  //     const investmentEarnings = rowData.investementsWithEarnings 
+  //       ? Math.max(0, rowData.investementsWithEarnings - amountInvested)
+  //       : 0;
         
-      monthlyData.push({
-        month,
-        yearlyIncome: rowData.monthlyData?.[0]?.monthlyIncome || 0,
-        leftoverIncome: 0, // No payments yet in Year 0
-        mortgagePayment: 0,
-        principalPaid: 0,
-        interestPaid: 0,
-        propertyTaxes: 0,
-        homeInsurance: 0,
-        maintenanceCosts: 0,
-        totalRent: rowData.totalRent ? rowData.totalRent / 12 : 0,
-        homeValue: rowData.homeValue,
-        homeEquity: rowData.homeEquity,
-        loanBalance: rowData.loanBalance,
-        leftoverInvestmentValue: rowData.leftoverInvestmentValue,
-        amountInvested: amountInvested,
-        investmentEarnings: investmentEarnings,
-        monthlySavings: 0,
-        investmentValueBeforeTax: rowData.investmentValueBeforeTax ? rowData.investmentValueBeforeTax / 12 : 0,
-        capitalGainsTaxPaid: 0,
-        investmentValueAfterTax: rowData.investmentValueAfterTax ? rowData.investmentValueAfterTax / 12 : 0,
-        totalWealthBuying: rowData.totalWealthBuying
-      });
-    }
-    return monthlyData;
-  }
+  //     monthlyData.push({
+  //       month,
+  //       yearlyIncome: rowData.monthlyData?.[0]?.monthlyIncome || 0,
+  //       leftoverIncome: 0, // No payments yet in Year 0
+  //       mortgagePayment: 0,
+  //       principalPaid: 0,
+  //       interestPaid: 0,
+  //       propertyTaxes: 0,
+  //       homeInsurance: 0,
+  //       maintenanceCosts: 0,
+  //       totalRent: rowData.totalRent ? rowData.totalRent / 12 : 0,
+  //       homeValue: rowData.homeValue,
+  //       homeEquity: rowData.homeEquity,
+  //       loanBalance: rowData.loanBalance,
+  //       investementsWithEarnings: rowData.investementsWithEarnings,
+  //       amountInvested: 0,
+  //       investmentEarnings: investmentEarnings,
+  //       monthlySavings: 0,
+  //       investmentValueBeforeTax: rowData.investmentValueBeforeTax ? rowData.investmentValueBeforeTax / 12 : 0,
+  //       capitalGainsTaxPaid: 0,
+  //       investmentValueAfterTax: rowData.investmentValueAfterTax ? rowData.investmentValueAfterTax / 12 : 0,
+  //       totalWealthBuying: rowData.totalWealthBuying
+  //     });
+  //   }
+  //   return monthlyData;
+  // }
   
-  // Process month by month for years > 0
   for (let month = 1; month <= 12; month++) {
     if (!rowData.monthlyData || !rowData.monthlyData[month-1]) {
       continue; // Skip if monthly data is not available
@@ -65,15 +64,15 @@ export const generateMonthlyData = (year: number, rowData: YearlyTableData): Mon
       yearlyIncome: monthlyIncome,
       totalRent: monthlyRent,
       leftoverIncome: monthlySavingsAmount,
-      mortgagePayment: rowData.mortgagePayment ? rowData.mortgagePayment / 12 : 0,
-      principalPaid: rowData.principalPaid ? rowData.principalPaid / 12 : 0,
-      interestPaid: rowData.interestPaid ? rowData.interestPaid / 12 : 0,
-      propertyTaxes: rowData.propertyTaxes ? rowData.propertyTaxes / 12 : 0,
-      homeInsurance: rowData.homeInsurance ? rowData.homeInsurance / 12 : 0,
-      maintenanceCosts: rowData.maintenanceCosts ? rowData.maintenanceCosts / 12 : 0,
-      homeValue: calculateMonthlyValue(rowData.homeValue, month, year),
-      homeEquity: calculateMonthlyValue(rowData.homeEquity, month, year),
-      loanBalance: calculateMonthlyValue(rowData.loanBalance, month, year),
+      mortgagePayment: monthlyDataPoint.mortgagePayment || 0,
+      principalPaid: monthlyDataPoint.principalPayment || 0,
+      interestPaid: monthlyDataPoint.interestPayment || 0,
+      propertyTaxes: monthlyDataPoint.propertyTaxes || 0,
+      homeInsurance: monthlyDataPoint.homeInsurance || 0,
+      maintenanceCosts: monthlyDataPoint.maintenanceCosts || 0,
+      homeValue: monthlyDataPoint.homeValue || 0,
+      homeEquity: monthlyDataPoint.homeEquity || 0,
+      loanBalance:  monthlyDataPoint.loanBalance || 0,
       amountInvested: monthlyDataPoint.amountInvested || 0,
       investmentEarnings: monthlyDataPoint.investmentEarnings || 0,
       monthlySavings: monthlySavingsAmount,
@@ -81,6 +80,7 @@ export const generateMonthlyData = (year: number, rowData: YearlyTableData): Mon
       capitalGainsTaxPaid: monthlyDataPoint.capitalGainsTax || 0,
       investmentValueAfterTax: monthlyDataPoint.investmentValueAfterTax || 0,
       totalWealthBuying: monthlyDataPoint.totalWealth || 0,
+      investementsWithEarnings: monthlyDataPoint.investementsWithEarnings || 0,
     });
   }
   
@@ -128,7 +128,7 @@ export const getTooltipContent = (key: string): string => {
       return "Cumulative contributions to investments.";
     case 'investmentEarnings':
       return "Investment returns for this period.";
-    case 'leftoverInvestmentValue':
+    case 'investementsWithEarnings':
       return "Total market value of investments.";
     case 'investmentValueBeforeTax':
       return "Value of investments before capital gains tax.";
@@ -190,7 +190,7 @@ export const getMonthlyTooltipContent = (key: string): string => {
       return "Cumulative contributions to investments.";
     case 'investmentEarnings':
       return "Investment returns for this month.";
-    case 'leftoverInvestmentValue':
+    case 'investementsWithEarnings':
       return "Value of investments at this point in the year.";
     case 'investmentValueBeforeTax':
       return "Value of investments before capital gains tax.";
