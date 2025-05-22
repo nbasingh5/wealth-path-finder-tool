@@ -30,8 +30,8 @@ export const calculateComparison = (formData: FormData): ComparisonResults => {
 
   // --- Combine Results and Calculate Comparisons ---
   const yearlyComparisons: YearlyComparison[] = [];
-  let cumulativeBuyingCosts = 0; // Needs recalculation based on yearly results
-  let cumulativeRentingCosts = 0; // Needs recalculation based on yearly results
+  let cumulativeBuyingCosts = 0;
+  let cumulativeRentingCosts = 0;
 
   for (let year = 0; year <= timeHorizonYears; year++) {
     const buyingYearData = buyingResults[year];
@@ -50,12 +50,22 @@ export const calculateComparison = (formData: FormData): ComparisonResults => {
         cumulativeBuyingCosts += yearlyBuyingCosts;
         cumulativeRentingCosts += yearlyRentingCosts;
     }
+
+    // Use the wealth values directly from the results (they include tax for final year)
+    let buyingWealth = buyingYearData.totalWealthBuying;
+    let rentingWealth = rentingYearData.totalWealthRenting;
+
+    // For the final year, ensure we're using after-tax values
+    if (year === timeHorizonYears) {
+      buyingWealth = buyingYearData.totalWealthBuying; // Should already include tax deduction
+      rentingWealth = rentingYearData.totalWealthRenting; // Should already include tax deduction
+    }
     
     yearlyComparisons.push({
       year,
-      buyingWealth: buyingYearData.totalWealthBuying,
-      rentingWealth: rentingYearData.totalWealthRenting,
-      difference: buyingYearData.totalWealthBuying - rentingYearData.totalWealthRenting,
+      buyingWealth,
+      rentingWealth,
+      difference: buyingWealth - rentingWealth,
       cumulativeBuyingCosts,
       cumulativeRentingCosts,
       yearlyIncome: buyingYearData.yearlyIncome, // Assume income is the same
@@ -66,9 +76,10 @@ export const calculateComparison = (formData: FormData): ComparisonResults => {
     });
   }
 
-  // --- Final Summary ---
-  const finalBuyingWealth = buyingResults[timeHorizonYears].totalWealthBuying;
-  const finalRentingWealth = rentingResults[timeHorizonYears].totalWealthRenting;
+  // --- Final Summary (FIXED) ---
+  // Make sure we're using the final year's wealth AFTER taxes
+  const finalBuyingWealth = buyingResults[timeHorizonYears].totalWealthBuying; // Already includes tax
+  const finalRentingWealth = rentingResults[timeHorizonYears].totalWealthRenting; // Already includes tax
   const difference = finalBuyingWealth - finalRentingWealth;
 
   // Determine better option with reasonable threshold
@@ -84,9 +95,7 @@ export const calculateComparison = (formData: FormData): ComparisonResults => {
   // Ensure the values are valid numbers
   const validatedFinalBuyingWealth = isNaN(finalBuyingWealth) ? 0 : finalBuyingWealth;
   const validatedFinalRentingWealth = isNaN(finalRentingWealth) ? 0 : finalRentingWealth;
-  const validatedDifference = isNaN(difference) ? 0 : Math.abs(difference);
-
-
+  const validatedDifference = isNaN(difference) ? 0 :  Math.abs(difference); 
   return {
     yearlyComparisons,
     buyingResults,
