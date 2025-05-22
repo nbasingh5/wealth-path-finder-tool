@@ -4,6 +4,8 @@
 export interface TableColumn<T> {
   key: keyof T | string;
   label: string;
+  isVisible?: boolean;
+  isImportant?: boolean; // Important columns are visible by default and can't be hidden
 }
 
 // Monthly data types for tables
