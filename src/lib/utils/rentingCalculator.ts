@@ -151,10 +151,20 @@ export const calculateRentingYearlyData = ({
     }
   }
 
-      const taxOwed = calculateCapitalGainsTax(
-        rentingResults[timeHorizonYears].investmentEarnings,
+    // Calculate capital gains tax on investment earnings only
+    let totalInvestmentEarnings = 0;
+
+    for (let i = 0; i < rentingResults.length; i++) {
+      const result = rentingResults[i];
+      totalInvestmentEarnings += result.investmentEarnings;
+
+    }
+    const taxOwed = calculateCapitalGainsTax(
+      totalInvestmentEarnings,
       investment.capitalGainsTaxRate
     );
+
+
   rentingResults[timeHorizonYears].capitalGainsTaxPaid = taxOwed;
   rentingResults[timeHorizonYears].totalWealthRenting =  rentingResults[timeHorizonYears].totalWealthRenting - taxOwed
   return {

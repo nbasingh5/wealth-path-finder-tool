@@ -27,6 +27,7 @@ export interface MonthlyTableData {
   investmentValueBeforeTax?: number;
   capitalGainsTaxPaid?: number;
   totalWealthBuying: number;
+  totalWealthRenting: number;
 }
 
 // Yearly data types for tables

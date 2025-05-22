@@ -68,8 +68,8 @@ export const calculateBuyingYearlyData = ({
       amountInvested: initialInvestment,
       investmentEarnings: 0,
       yearlySavings: 0,
-      investmentsWithEarnings: 0, 
-      totalWealthBuying: 0
+      investmentsWithEarnings: initialInvestment, 
+      totalWealthBuying: downPaymentAmount + initialInvestment
     });
   }
 
@@ -87,7 +87,7 @@ export const calculateBuyingYearlyData = ({
     totalWealthBuying: downPaymentAmount + initialInvestment,
     yearlyIncome: currentYearlyIncome,
     yearlySavings: 0,
-    investmentsWithEarnings: initialInvestment, // Fixed: Typo in variable name
+    investmentsWithEarnings: initialInvestment,
     initialInvestment,
     amountInvested: initialInvestment,
     investmentEarnings: 0,
@@ -107,12 +107,12 @@ export const calculateBuyingYearlyData = ({
     let yearlyMaintenanceCosts = 0;
     let yearlyLeftoverIncome = 0;
     let yearlyInvestmentEarnings = 0;
-    let homeAppreciation = 0;
 
     // Get previous year's data
     const previousYear = buyingResults[year - 1];
-    let startOfTheYearHomeEquity = previousYear.homeEquity;
-    let amountInvested = previousYear.investmentsWithEarnings;
+    let currentHomeEquity = previousYear.homeEquity;
+    let amountInvested = previousYear.investmentsWithEarnings; // Start with previous month's total investment value
+    let investmentsWithEarnings = previousYear.investmentsWithEarnings; // Track total investment value
 
     for (let month = 1; month <= 12; month++) {
       const globalMonthNumber = (year - 1) * 12 + month;
@@ -160,31 +160,33 @@ export const calculateBuyingYearlyData = ({
       const leftoverMonthlyIncome = monthlyIncome - monthlyExpenses;
       yearlyLeftoverIncome += leftoverMonthlyIncome;
 
-      // Track investment contributions
+      // Add new investment contributions to the total amount invested
       if (leftoverMonthlyIncome > 0) {
-        amountInvested += leftoverMonthlyIncome
-
+        amountInvested += leftoverMonthlyIncome;
       }
 
-      // Calculate monthly investment return
+      // Calculate monthly investment return on current amount invested
       const monthlyReturn = calculateInvestmentReturnForMonth(
         amountInvested,
         investment.annualReturn
       );
 
       yearlyInvestmentEarnings += monthlyReturn;
+      
+      // Update total investment value (amount invested + this month's returns)
+      investmentsWithEarnings = amountInvested + monthlyReturn;
+      
+   
 
       // Apply monthly home appreciation
       const monthlyAppreciationRate = Math.pow(1 + appreciationRate, 1 / 12) - 1;
-      homeAppreciation = currentHomeValue * monthlyAppreciationRate;
       currentHomeValue *= 1 + monthlyAppreciationRate;
 
       // Update loan balance and home equity
       loanBalance = remainingBalance;
-      const currentHomeEquity = startOfTheYearHomeEquity + principalPayment + homeAppreciation;
-      startOfTheYearHomeEquity = currentHomeEquity;
+      currentHomeEquity = currentHomeValue - loanBalance;
 
-      // Store monthly data point
+      // Store monthly data point 
       monthlyBuyingData[year].push({
         month,
         homeValue: currentHomeValue,
@@ -199,16 +201,16 @@ export const calculateBuyingYearlyData = ({
         maintenanceCosts: monthlyMaintenanceCosts,
         amountInvested,
         investmentEarnings: monthlyReturn,
-        investmentsWithEarnings: amountInvested + monthlyReturn,
+        investmentsWithEarnings,
         yearlySavings: leftoverMonthlyIncome,
-        totalWealthBuying: currentHomeEquity + amountInvested + monthlyReturn,
+        totalWealthBuying: currentHomeEquity + investmentsWithEarnings,
       });
 
-      amountInvested += monthlyReturn; // Update amountInvested for the next month
+        // For next month, amount invested includes this month's returns (reinvestment)
+        amountInvested = investmentsWithEarnings;
     } // End monthly loop
 
-    
-    const totalWealth = startOfTheYearHomeEquity + amountInvested + yearlyInvestmentEarnings;
+    const totalWealth = currentHomeEquity + investmentsWithEarnings;
 
     // Add year results
     buyingResults.push({
@@ -221,13 +223,13 @@ export const calculateBuyingYearlyData = ({
       homeInsurance: yearlyHomeInsurance,
       maintenanceCosts: yearlyMaintenanceCosts,
       homeValue: currentHomeValue,
-      homeEquity: startOfTheYearHomeEquity,
+      homeEquity: currentHomeEquity,
       totalWealthBuying: totalWealth,
       yearlyIncome: currentYearlyIncome,
       yearlySavings: yearlyLeftoverIncome,
-      investmentsWithEarnings: amountInvested + yearlyInvestmentEarnings, // Fixed: Use correct variable name and value
+      investmentsWithEarnings,
       initialInvestment,
-      amountInvested: amountInvested , // Value at the start of this year
+      amountInvested,
       investmentEarnings: yearlyInvestmentEarnings,
       monthlyData: monthlyBuyingData[year],
       capitalGainsTaxPaid: 0,
@@ -241,15 +243,33 @@ export const calculateBuyingYearlyData = ({
 
   const finalResult = buyingResults[buyingResults.length - 1];
   
-  // Calculate capital gains tax if needed
+  // Calculate capital gains tax on investment earnings only
+  let totalInterestPaid = 0;
+  let totalMoneyInvested = 0;
+  for (let i = 0; i < buyingResults.length; i++) {
+    const result = buyingResults[i];
+    totalInterestPaid += result.investmentEarnings;
+    totalMoneyInvested += result.amountInvested;
+
+  }
+
+  // Calculate capital gains tax on investment earnings only
+  let totalInvestmentEarnings = 0;
+
+  for (let i = 0; i < buyingResults.length; i++) {
+    const result = buyingResults[i];
+    totalInvestmentEarnings += result.investmentEarnings;
+
+  }
   const taxOwed = calculateCapitalGainsTax(
-    buyingResults[timeHorizonYears].investmentEarnings,
+    totalInvestmentEarnings,
     investment.capitalGainsTaxRate
   );
+  // Apply tax to final year results
   buyingResults[timeHorizonYears].capitalGainsTaxPaid = taxOwed;
-  buyingResults[timeHorizonYears].investmentsWithEarnings = buyingResults[timeHorizonYears].totalWealthBuying - taxOwed
-  buyingResults[timeHorizonYears].totalWealthBuying = buyingResults[timeHorizonYears].investmentsWithEarnings
-  const finalInvestmentValueAfterTax = finalResult.investmentsWithEarnings;
+  buyingResults[timeHorizonYears].totalWealthBuying = buyingResults[timeHorizonYears].homeEquity + buyingResults[timeHorizonYears].investmentsWithEarnings - taxOwed;
+  
+  const finalInvestmentValueAfterTax = buyingResults[timeHorizonYears].investmentsWithEarnings;
 
   return {
     buyingResults,
