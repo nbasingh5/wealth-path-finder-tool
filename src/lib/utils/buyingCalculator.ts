@@ -47,8 +47,7 @@ export const calculateBuyingYearlyData = ({
   // Initialize tracking variables
   let currentHomeValue = initialHomeValue;
   let loanBalance = loanAmount;
-  let investmentValue = Math.max(0, general.currentSavings - downPaymentAmount);
-  let initialInvestment = investmentValue;
+  let initialInvestment = Math.max(0, general.currentSavings - downPaymentAmount);
   let currentYearlyIncome = general.annualIncome;
 
   // --- Year 0 Setup ---
@@ -66,10 +65,11 @@ export const calculateBuyingYearlyData = ({
       propertyTaxes: 0,
       homeInsurance: 0,
       maintenanceCosts: 0,
-      investmentValue: investmentValue, 
-      initialInvestment: initialInvestment, 
+      amountInvested: initialInvestment,
+      investmentEarnings: 0,
       yearlySavings: 0,
       investmentsWithEarnings: 0, 
+      totalWealthBuying: 0
     });
   }
 
@@ -84,12 +84,12 @@ export const calculateBuyingYearlyData = ({
     maintenanceCosts: 0,
     homeValue: initialHomeValue,
     homeEquity: downPaymentAmount,
-    totalWealthBuying: downPaymentAmount + investmentValue,
+    totalWealthBuying: downPaymentAmount + initialInvestment,
     yearlyIncome: currentYearlyIncome,
     yearlySavings: 0,
-    investmentsWithEarnings: investmentValue, // Fixed: Typo in variable name
+    investmentsWithEarnings: initialInvestment, // Fixed: Typo in variable name
     initialInvestment,
-    amountInvested: investmentValue,
+    amountInvested: initialInvestment,
     investmentEarnings: 0,
     monthlyData: monthlyBuyingData[0],
     capitalGainsTaxPaid: 0,
@@ -112,7 +112,8 @@ export const calculateBuyingYearlyData = ({
     // Get previous year's data
     const previousYear = buyingResults[year - 1];
     let startOfTheYearHomeEquity = previousYear.homeEquity;
-    
+    let amountInvested = previousYear.investmentsWithEarnings;
+
     for (let month = 1; month <= 12; month++) {
       const globalMonthNumber = (year - 1) * 12 + month;
       const monthlyIncome = currentYearlyIncome / 12;
@@ -161,15 +162,16 @@ export const calculateBuyingYearlyData = ({
 
       // Track investment contributions
       if (leftoverMonthlyIncome > 0) {
-        investmentValue += leftoverMonthlyIncome;
+        amountInvested += leftoverMonthlyIncome
+
       }
 
       // Calculate monthly investment return
       const monthlyReturn = calculateInvestmentReturnForMonth(
-        investmentValue,
+        amountInvested,
         investment.annualReturn
       );
-      investmentValue += monthlyReturn;
+
       yearlyInvestmentEarnings += monthlyReturn;
 
       // Apply monthly home appreciation
@@ -195,18 +197,18 @@ export const calculateBuyingYearlyData = ({
         propertyTaxes: monthlyPropertyTaxes,
         homeInsurance: monthlyHomeInsurance,
         maintenanceCosts: monthlyMaintenanceCosts,
-        investmentValue,
-        investmentsWithEarnings: investmentValue,
-        initialInvestment,
+        amountInvested,
+        investmentEarnings: monthlyReturn,
+        investmentsWithEarnings: amountInvested + monthlyReturn,
         yearlySavings: leftoverMonthlyIncome,
+        totalWealthBuying: currentHomeEquity + amountInvested + monthlyReturn,
       });
 
-
+      amountInvested += monthlyReturn; // Update amountInvested for the next month
     } // End monthly loop
 
-    // Calculate home equity and investment values at year end
-    const homeEquity = startOfTheYearHomeEquity;
-    const totalWealth = homeEquity + investmentValue;
+    
+    const totalWealth = startOfTheYearHomeEquity + amountInvested + yearlyInvestmentEarnings;
 
     // Add year results
     buyingResults.push({
@@ -219,13 +221,13 @@ export const calculateBuyingYearlyData = ({
       homeInsurance: yearlyHomeInsurance,
       maintenanceCosts: yearlyMaintenanceCosts,
       homeValue: currentHomeValue,
-      homeEquity,
+      homeEquity: startOfTheYearHomeEquity,
       totalWealthBuying: totalWealth,
       yearlyIncome: currentYearlyIncome,
       yearlySavings: yearlyLeftoverIncome,
-      investmentsWithEarnings: investmentValue, // Fixed: Use correct variable name and value
+      investmentsWithEarnings: amountInvested + yearlyInvestmentEarnings, // Fixed: Use correct variable name and value
       initialInvestment,
-      amountInvested: previousYear.investmentsWithEarnings, // Value at the start of this year
+      amountInvested: amountInvested , // Value at the start of this year
       investmentEarnings: yearlyInvestmentEarnings,
       monthlyData: monthlyBuyingData[year],
       capitalGainsTaxPaid: 0,

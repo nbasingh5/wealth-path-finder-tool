@@ -52,9 +52,10 @@ export interface MonthlyBuyingDataPoint {
   propertyTaxes: number;
   homeInsurance: number;
   maintenanceCosts: number;
-  investmentValue: number;
-  initialInvestment: number; // Added field
+  amountInvested: number;
+  investmentEarnings: number;
   yearlySavings: number; // Added field
+  totalWealthBuying: number;
   investmentsWithEarnings: number; // Added field
 }
 

@@ -40,7 +40,7 @@ export const generateMonthlyData = (year: number, rowData: YearlyTableData): Mon
       yearlySavings: monthlySavingsAmount,
       investmentValueBeforeTax: monthlyDataPoint.investmentValueBeforeTax || 0,
       capitalGainsTaxPaid: monthlyDataPoint.capitalGainsTax || 0,
-      totalWealthBuying: monthlyDataPoint.totalWealth || 0,
+      totalWealthBuying: monthlyDataPoint.totalWealthBuying || 0,
       investmentsWithEarnings: monthlyDataPoint.investmentsWithEarnings || 0,
     });
   }

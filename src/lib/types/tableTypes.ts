@@ -26,7 +26,6 @@ export interface MonthlyTableData {
   yearlySavings: number;
   investmentValueBeforeTax?: number;
   capitalGainsTaxPaid?: number;
-  investmentValueAfterTax?: number;
   totalWealthBuying: number;
 }
 
@@ -53,7 +52,6 @@ export interface YearlyTableData {
   additionalContributions?: number;
   investmentValueBeforeTax?: number;
   capitalGainsTaxPaid?: number;
-  investmentValueAfterTax?: number;
   annualReturnRate?: number;
   capitalGainsTaxRate?: number;
   monthlyData?: any[]; // Will be typed more specifically in components
